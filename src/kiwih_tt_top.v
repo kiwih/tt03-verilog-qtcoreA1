@@ -43,7 +43,7 @@ assign io_out[7] = miso;
 assign io_out[6:0] = led_out;
 
 accumulator_microcontroller #(
-    .MEM_SIZE(19)
+    .MEM_SIZE(18)
 ) 
 qtcore
 (
