@@ -30,7 +30,9 @@ module accumulator_microcontroller #(
     input wire scan_in,
     output wire scan_out,
     input wire proc_en,
-    output wire halt
+    output wire halt,
+
+    output wire [6:0] led_out
 );
     // Declare wires for ALU, memory, PC, ACC, and IR connections
     wire [7:0] alu_A;
@@ -164,7 +166,9 @@ module accumulator_microcontroller #(
         .data_out(memory_data_out),
         .scan_enable(scan_enable),
         .scan_in(acc_scan_out),
-        .scan_out(memory_scan_out)
+        .scan_out(memory_scan_out),
+
+        .led_out(led_out)
     );
     
     // Instantiate Memory Address Multiplexer

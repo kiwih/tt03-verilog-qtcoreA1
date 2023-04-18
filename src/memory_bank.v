@@ -35,7 +35,6 @@ module memory_bank #(
     input wire scan_in,
     output wire scan_out,
 
-    input wire [1:0] btn_in,
     output wire [6:0] led_out
 );
 

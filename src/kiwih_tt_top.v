@@ -37,8 +37,10 @@ wire miso = scan_enable_in ? scan_out :
             proc_enable_in ? halt_out :
             0;
 
+wire [6:0] led_out;
+
 assign io_out[7] = miso;
-assign io_out[6:0] = 0;
+assign io_out[6:0] = led_out;
 
 accumulator_microcontroller #(
     .MEM_SIZE(16)
@@ -51,6 +53,7 @@ qtcore
     .scan_in(scan_in),
     .scan_out(scan_out),
     .proc_en(proc_enable_in),
-    .halt(halt_out)
+    .halt(halt_out),
+    .led_out(led_out)
 );
 endmodule
