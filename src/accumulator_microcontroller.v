@@ -38,7 +38,7 @@ module accumulator_microcontroller
     wire [7:0] memory_data_in;
     wire [7:0] memory_data_out;
     reg [4:0] pc_data_in;
-    wire [4:0] pc_data_out;
+    wire [3:0] pc_data_out;
     reg [7:0] acc_data_in;
     wire [7:0] acc_data_out;
     wire [7:0] ir_data_in;
@@ -79,12 +79,12 @@ module accumulator_microcontroller
     // Remaining module instantiations and connections go here
     // Instantiate PC
     shift_register #(
-        .WIDTH(5)
+        .WIDTH(4)
     ) PC_inst (
         .clk(clk),
         .rst(rst),
         .enable(cu_PC_write_enable),
-        .data_in(pc_data_in),
+        .data_in(pc_data_in[3:0]),
         .data_out(pc_data_out),
         .scan_enable(scan_enable),
         .scan_in(control_unit_scan_out),
@@ -92,10 +92,10 @@ module accumulator_microcontroller
     );
     
     // Instantiate PC multiplexer
-    wire [4:0] pc_plus_one = pc_data_out + 5'b1;
-    wire [4:0] pc_minus_three = pc_data_out - 5'b11;
+    wire [4:0] pc_plus_one = {1'b0, pc_data_out} + 5'b1;
+    wire [4:0] pc_minus_three = {1'b0, pc_data_out} - 5'b11;
     // Declare additional wires for PC mux
-    wire [4:0] pc_plus_two = pc_data_out + 5'b10;
+    wire [4:0] pc_plus_two = {1'b0, pc_data_out} + 5'b10;
     
     // Instantiate PC multiplexer
     always @(*) begin
@@ -142,20 +142,20 @@ module accumulator_microcontroller
         case(cu_ACC_mux_select)
             2'b00: acc_data_in = alu_Y;
             2'b01: acc_data_in = memory_data_out;
-            2'b10: acc_data_in = {3'b000, pc_data_out};
+            2'b10: acc_data_in = {4'b0000, pc_data_out};
             default: acc_data_in = 8'b0;
         endcase
     end
     
     // Instantiate Memory Bank
     memory_bank #(
-        .ADDR_WIDTH(5),
+        .ADDR_WIDTH(4),
         .DATA_WIDTH(8),
         .MEM_SIZE(32)
     ) memory_inst (
         .clk(clk),
         .rst(rst),
-        .address(memory_address),
+        .address(memory_address[3:0]),
         .data_in(acc_data_out),
         .write_enable(cu_Memory_write_enable),
         .data_out(memory_data_out),
@@ -169,7 +169,7 @@ module accumulator_microcontroller
         case(cu_Memory_address_mux_select)
             2'b00: memory_address = ir_data_out[4:0];
             2'b01: memory_address = acc_data_out[4:0];
-            2'b10: memory_address = pc_data_out;
+            2'b10: memory_address = {1'b0, pc_data_out};
             default: memory_address = 5'b0;
         endcase
     end
