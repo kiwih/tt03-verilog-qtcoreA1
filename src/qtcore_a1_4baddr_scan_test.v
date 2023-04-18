@@ -52,7 +52,8 @@ module qtcore_a1_4baddr_scan_test(
     //etc
     reg spi_miso_cap;
     integer i;
-    
+    integer fid;
+
     initial begin
         scan_chain[151:0] = 152'b0;
 
@@ -200,7 +201,10 @@ module qtcore_a1_4baddr_scan_test(
         
         $display("Unload scan chain successful");
         
-        $finish;
+        fid = $fopen("TEST_PASSES.txt", "w");
+        $fwrite(fid, "TEST_PASSES");
+        $display("TEST_PASSES");
+        $fclose(fid);
      end
     
 endmodule

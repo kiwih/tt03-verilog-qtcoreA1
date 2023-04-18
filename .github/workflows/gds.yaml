@@ -147,14 +147,14 @@ jobs:
         make clean
         GATES=yes make
         # make will return success even if the test fails, so check for failure in the results.xml
-        ! grep failure results.xml
+        grep TEST_PASSES TEST_PASSES.txt
 
-    - name: upload vcd
-      if: success() || failure()
-      uses: actions/upload-artifact@v3
-      with:
-          name: gatelevel-test-vcd
-          path: src/tb.vcd
+    # - name: upload vcd
+    #   if: success() || failure()
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #       name: gatelevel-test-vcd
+    #       path: src/tb.vcd
 
 ##############################################################
 # Generate files for the 3D viewer

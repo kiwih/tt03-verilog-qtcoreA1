@@ -5,11 +5,22 @@
 SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
 
+
+# TOPLEVEL is the name of the toplevel module in your Verilog or VHDL file
+TOPLEVEL = qtcore_a1_4baddr_scan_test
+
+
+run_test: test
+	./a.out
+
 # normal simulation
 ifneq ($(GATES),yes)
 
 # this is the only part you should need to modify:
 VERILOG_SOURCES += $(PWD)/kiwih_tt_top.v $(PWD)/accumulator_microcontroller.v $(PWD)/alu.v $(PWD)/shift_register.v $(PWD)/memory_bank.v $(PWD)/control_unit.v
+
+test:
+	iverilog -s $(TOPLEVEL) $(VERILOG_SOURCES) $(PWD)/qtcore_a1_4baddr_scan_test.v
 
 else
 
@@ -23,11 +34,15 @@ VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitiv
 VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
 
 # this gets copied in by the GDS action workflow
-VERILOG_SOURCES += $(PWD)/qtcore_a1_4baddr_scan_test.v
-endif
-
-# TOPLEVEL is the name of the toplevel module in your Verilog or VHDL file
-TOPLEVEL = qtcore_a1_4baddr_scan_test
+VERILOG_SOURCES += $(PWD)/qtcore_a1_4baddr_scan_test.v $(PWD)/gate_level_netlist.v
 
 test:
-	iverilog -s $(TOPLEVEL) $(VERILOG_SOURCES) $(PWD)/qtcore_a1_4baddr_scan_test.v
+	iverilog -s $(TOPLEVEL) $(VERILOG_SOURCES)
+	
+endif
+
+clean:
+	rm -rf TEST_PASSES.txt
+	rm -rf *.out
+
+.PHONY: clean test run_test
