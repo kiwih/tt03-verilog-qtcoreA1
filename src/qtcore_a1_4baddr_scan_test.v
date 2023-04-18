@@ -27,20 +27,24 @@ module qtcore_a1_4baddr_scan_test(
  localparam CLK_PERIOD = 10;
     localparam CLK_HPERIOD = CLK_PERIOD/2;
     
+    wire [7:0] io_in;
+    wire [7:0] io_out;
+
     reg clk_in, rst_in, scan_enable_in, scan_in, proc_en_in;
     wire scan_out, halt_out;
-    accumulator_microcontroller #(
-        .MEM_SIZE(16)
-    ) dut
+    kiwih_tt_top dut
     (
-        .clk(clk_in),
-        .rst(rst_in),
-        .scan_enable(scan_enable_in),
-        .scan_in(scan_in),
-        .scan_out(scan_out),
-        .proc_en(proc_en_in),
-        .halt(halt_out)
+        .io_in(io_in),
+        .io_out(io_out)
     );
+
+    assign io_in[0] = clk_in;
+    assign io_in[1] = rst_in;
+    assign io_in[2] = !scan_enable_in;
+    assign io_in[3] = !proc_en_in;
+    assign io_in[4] = scan_in;
+
+    assign scan_out = io_out[7];
     
     
     reg [151:0] scan_chain;     
@@ -93,35 +97,35 @@ module qtcore_a1_4baddr_scan_test(
         #(CLK_PERIOD);
         scan_enable_in = 0;
         
-        if(dut.cu_inst.state_register.internal_data != 3'b001) begin
+        if(dut.qtcore.cu_inst.state_register.internal_data != 3'b001) begin
             $display("Wrong state reg value");
             $finish;
         end
-        if(dut.PC_inst.internal_data != 5'h1) begin
+        if(dut.qtcore.PC_inst.internal_data != 5'h1) begin
             $display("Wrong PC reg value");
             $finish;
         end
-        if(dut.IR_inst.internal_data != 8'he0) begin
+        if(dut.qtcore.IR_inst.internal_data != 8'he0) begin
             $display("Wrong IR reg value");
             $finish;
         end
-        if(dut.ACC_inst.internal_data != 8'h01) begin
+        if(dut.qtcore.ACC_inst.internal_data != 8'h01) begin
             $display("Wrong ACC reg value");
             $finish;
         end
-        if(dut.memory_inst.memory[0].mem_cell.internal_data != 8'he0) begin
+        if(dut.qtcore.memory_inst.memory[0].mem_cell.internal_data != 8'he0) begin
             $display("Wrong mem[0] reg value");
             $finish;
         end
-        if(dut.memory_inst.memory[1].mem_cell.internal_data != 8'he1) begin
+        if(dut.qtcore.memory_inst.memory[1].mem_cell.internal_data != 8'he1) begin
             $display("Wrong mem[1] reg value");
             $finish;
         end
-        if(dut.memory_inst.memory[2].mem_cell.internal_data != 8'he2) begin
+        if(dut.qtcore.memory_inst.memory[2].mem_cell.internal_data != 8'he2) begin
             $display("Wrong mem[2] reg value");
             $finish;
         end
-        if(dut.memory_inst.memory[3].mem_cell.internal_data != 8'he3) begin
+        if(dut.qtcore.memory_inst.memory[3].mem_cell.internal_data != 8'he3) begin
             $display("Wrong mem[3] reg value");
             $finish;
         end
@@ -138,8 +142,8 @@ module qtcore_a1_4baddr_scan_test(
             clk_in = 0;
         end
         proc_en_in = 0;
-        if(dut.ACC_inst.internal_data != 8'hb) begin
-            $display("Wrong ACC reg value %d", dut.ACC_inst.internal_data);
+        if(dut.qtcore.ACC_inst.internal_data != 8'hb) begin
+            $display("Wrong ACC reg value %d", dut.qtcore.ACC_inst.internal_data);
            
             $finish;
         end

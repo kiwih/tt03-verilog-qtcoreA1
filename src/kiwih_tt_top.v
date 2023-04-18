@@ -41,8 +41,8 @@ assign io_out[7] = miso;
 assign io_out[6:0] = 0;
 
 accumulator_microcontroller #(
-        .MEM_SIZE(16)
-)
+    .MEM_SIZE(16)
+) 
 qtcore
 (
     .clk(clk),

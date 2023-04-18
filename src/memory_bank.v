@@ -33,10 +33,12 @@ module memory_bank #(
     output reg [DATA_WIDTH-1:0] data_out,
     input wire scan_enable,
     input wire scan_in,
-    output wire scan_out
+    output wire scan_out,
+
+    input wire [1:0] btn_in,
+    output wire [6:0] led_out
 );
 
-    
     // Generate an array of shift registers for the memory
     wire [DATA_WIDTH-1:0] mem_data_out [0:MEM_SIZE-1];
     wire mem_scan_out [0:MEM_SIZE-1];
@@ -74,6 +76,7 @@ module memory_bank #(
     // Scan chain output
     assign scan_out = mem_scan_out[MEM_SIZE-1];
     
+    assign led_out = mem_data_out[15][6:0];
     
 //    reg [7:0] register_bank [0:31];
 
