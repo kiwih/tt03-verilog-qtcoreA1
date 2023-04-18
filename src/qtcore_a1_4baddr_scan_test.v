@@ -26,7 +26,9 @@ module qtcore_a1_4baddr_scan_test(
     
  localparam CLK_PERIOD = 10;
     localparam CLK_HPERIOD = CLK_PERIOD/2;
-    
+
+    localparam MEM_SIZE = 20;
+    localparam SCAN_CHAIN_SIZE = 24 + (MEM_SIZE * 8);
     wire [7:0] io_in;
     wire [7:0] io_out;
 
@@ -47,7 +49,7 @@ module qtcore_a1_4baddr_scan_test(
     assign scan_out = io_out[7];
     
     
-    reg [151:0] scan_chain;     
+    reg [SCAN_CHAIN_SIZE-1:0] scan_chain;     
     //2:0   - state
     //7:3   - PC
     //15:8  - IR
@@ -59,7 +61,7 @@ module qtcore_a1_4baddr_scan_test(
     integer fid;
 
     initial begin
-        scan_chain[151:0] = 152'b0;
+        scan_chain = 'b0;
 
         // TEST PART 1: LOAD SCAN CHAIN
 
@@ -85,14 +87,14 @@ module qtcore_a1_4baddr_scan_test(
         
         
         scan_enable_in = 1; //asert low chip select
-        for (i = 0; i < 152; i = i + 1) begin
-            scan_in = scan_chain[151];
+        for (i = 0; i < SCAN_CHAIN_SIZE; i = i + 1) begin
+            scan_in = scan_chain[SCAN_CHAIN_SIZE-1];
             #(CLK_PERIOD / 2);
             clk_in = 1;
             spi_miso_cap = scan_out;
             #(CLK_PERIOD / 2);
             clk_in = 0;
-            scan_chain = {scan_chain[150:0], spi_miso_cap};
+            scan_chain = {scan_chain[SCAN_CHAIN_SIZE-2:0], spi_miso_cap};
         end
         #(CLK_PERIOD);
         scan_enable_in = 0;
@@ -149,19 +151,19 @@ module qtcore_a1_4baddr_scan_test(
         end
         
         $display("Instruction operation successful");
-        scan_chain[151:0] = 152'b0;
-        
+        scan_chain = 'b0;
+
         //TEST PART 3: UNLOAD SCAN CHAIN 
         
         scan_enable_in = 1; //asert low chip select
-        for (i = 0; i < 152; i = i + 1) begin
-            scan_in = scan_chain[151];
+        for (i = 0; i < SCAN_CHAIN_SIZE; i = i + 1) begin
+            scan_in = scan_chain[SCAN_CHAIN_SIZE-1];
             #(CLK_PERIOD / 2);
             clk_in = 1;
             spi_miso_cap = scan_out;
             #(CLK_PERIOD / 2);
             clk_in = 0;
-            scan_chain = {scan_chain[150:0], spi_miso_cap};
+            scan_chain = {scan_chain[SCAN_CHAIN_SIZE-2:0], spi_miso_cap};
         end
         #(CLK_PERIOD);
         scan_enable_in = 0;

@@ -75,7 +75,7 @@ module memory_bank #(
     // Scan chain output
     assign scan_out = mem_scan_out[MEM_SIZE-1];
     
-    assign led_out = mem_data_out[15][6:0];
+    assign led_out = mem_data_out[MEM_SIZE-1][6:0];
     
 //    reg [7:0] register_bank [0:31];
 
