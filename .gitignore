@@ -8,3 +8,4 @@ src/__pycache__/
 src/results.xml
 src/user_config.tcl
 a.out
+TEST_PASSES.txt

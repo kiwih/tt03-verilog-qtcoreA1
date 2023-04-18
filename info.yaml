@@ -11,7 +11,7 @@ project:
     - control_unit.v
     - memory_bank.v
     - shift_register.v
-    - tt_top.v
+    - kiwih_tt_top.v
   
   top_module:  "kiwih_tt_top"      # put the name of your top module here, make it unique by prepending your github username
 
