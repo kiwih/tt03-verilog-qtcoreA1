@@ -9,7 +9,7 @@ TOPLEVEL_LANG ?= verilog
 ifneq ($(GATES),yes)
 
 # this is the only part you should need to modify:
-VERILOG_SOURCES += $(PWD)/tt_top.v $(PWD)/accumulator_microcontroller.v $(PWD)/alu.v $(PWD)/shift_register.v $(PWD)/memory_unit.v $(PWD)/control_unit.v
+VERILOG_SOURCES += $(PWD)/kiwih_tt_top.v $(PWD)/accumulator_microcontroller.v $(PWD)/alu.v $(PWD)/shift_register.v $(PWD)/memory_bank.v $(PWD)/control_unit.v
 
 else
 
@@ -23,8 +23,11 @@ VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitiv
 VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
 
 # this gets copied in by the GDS action workflow
-VERILOG_SOURCES += $(PWD)/tb.v $(PWD)/gate_level_netlist.v
+VERILOG_SOURCES += $(PWD)/qtcore_a1_4baddr_scan_test.v
 endif
 
 # TOPLEVEL is the name of the toplevel module in your Verilog or VHDL file
-TOPLEVEL = tb
+TOPLEVEL = qtcore_a1_4baddr_scan_test
+
+test:
+	iverilog -s $(TOPLEVEL) $(VERILOG_SOURCES) $(PWD)/qtcore_a1_4baddr_scan_test.v

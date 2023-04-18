@@ -13,7 +13,7 @@ project:
     - shift_register.v
     - tt_top.v
   
-  top_module:  "tt_top"      # put the name of your top module here, make it unique by prepending your github username
+  top_module:  "kiwih_tt_top"      # put the name of your top module here, make it unique by prepending your github username
 
 # Keep a track of the submission yaml
 yaml_version: 3.0
