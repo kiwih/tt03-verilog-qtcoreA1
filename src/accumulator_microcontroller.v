@@ -151,7 +151,7 @@ module accumulator_microcontroller
     memory_bank #(
         .ADDR_WIDTH(4),
         .DATA_WIDTH(8),
-        .MEM_SIZE(32)
+        .MEM_SIZE(16)
     ) memory_inst (
         .clk(clk),
         .rst(rst),
