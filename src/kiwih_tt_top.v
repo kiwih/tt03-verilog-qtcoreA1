@@ -40,7 +40,10 @@ wire miso = scan_enable_in ? scan_out :
 assign io_out[7] = miso;
 assign io_out[6:0] = 0;
 
-accumulator_microcontroller qtcore
+accumulator_microcontroller #(
+        .MEM_SIZE(16)
+)
+qtcore
 (
     .clk(clk),
     .rst(rst),
