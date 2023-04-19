@@ -26,7 +26,7 @@ documentation:
   author:       "Hammond Pearce"
   title:        "QTCore-A1"
   language:     "Verilog"
-  description:  "An accumulator-based 8-bit microarchitecture designed via a GPT-4 conversation."
+  description:  "An accumulator-based 8-bit microarchitecture designed via GPT-4 conversations."
 
 # Longer description of how the project works. You can use standard markdown format.
   how_it_works: |
