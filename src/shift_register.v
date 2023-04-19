@@ -42,7 +42,10 @@ module shift_register #(
         end else if (enable) begin
             internal_data <= data_in;
         end else if (scan_enable) begin
-            internal_data <= {internal_data[WIDTH-2:0], scan_in};
+            if(WIDTH > 1)
+                internal_data <= {internal_data[WIDTH-2:0], scan_in};
+            else
+                internal_data <= {scan_in};
         end
     end
 

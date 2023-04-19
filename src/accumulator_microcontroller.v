@@ -32,6 +32,7 @@ module accumulator_microcontroller #(
     input wire proc_en,
     output wire halt,
 
+    input wire btn_in,
     output wire [6:0] led_out
 );
     // Declare wires for ALU, memory, PC, ACC, and IR connections
@@ -168,6 +169,7 @@ module accumulator_microcontroller #(
         .scan_in(acc_scan_out),
         .scan_out(memory_scan_out),
 
+        .btn_in(btn_in),
         .led_out(led_out)
     );
     

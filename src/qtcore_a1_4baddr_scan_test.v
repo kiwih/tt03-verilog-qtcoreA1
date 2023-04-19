@@ -32,8 +32,9 @@ module qtcore_a1_4baddr_scan_test(
     wire [7:0] io_in;
     wire [7:0] io_out;
 
-    reg clk_in, rst_in, scan_enable_in, scan_in, proc_en_in;
+    reg clk_in, rst_in, scan_enable_in, scan_in, proc_en_in, btn_in;
     wire scan_out, halt_out;
+    wire [6:0] led_out;
     kiwih_tt_top dut
     (
         .io_in(io_in),
@@ -45,8 +46,10 @@ module qtcore_a1_4baddr_scan_test(
     assign io_in[2] = !scan_enable_in;
     assign io_in[3] = !proc_en_in;
     assign io_in[4] = scan_in;
+    assign io_in[5] = btn_in;
 
     assign scan_out = io_out[7];
+    assign led_out = io_out[6:0];
     
     
     reg [SCAN_CHAIN_SIZE-1:0] scan_chain;     
@@ -74,6 +77,8 @@ module qtcore_a1_4baddr_scan_test(
         scan_chain[47:40] = 8'he2; //MEM[2] = 0xE2 (ADDI 2)
         scan_chain[55:48] = 8'he3; //MEM[3] = 0xE3 (ADDI 3)
         scan_chain[63:56] = 8'he4; //MEM[4] = 0xE4 (ADDI 4)
+
+        scan_chain[SCAN_CHAIN_SIZE-1 -: 8] = 8'hF0;
         
         scan_enable_in = 0;
         proc_en_in = 0;
@@ -129,6 +134,10 @@ module qtcore_a1_4baddr_scan_test(
         end
         if(dut.qtcore.memory_inst.memory[3].mem_cell.internal_data != 8'he3) begin
             $display("Wrong mem[3] reg value");
+            $finish;
+        end
+        if(led_out != 7'b1111000) begin
+            $display("Wrong LED data out, got %b", led_out);
             $finish;
         end
         

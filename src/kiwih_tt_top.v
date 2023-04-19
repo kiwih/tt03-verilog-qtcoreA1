@@ -31,6 +31,7 @@ wire rst = io_in[1];
 wire scan_enable_in = !io_in[2]; //SPI uses active low
 wire proc_enable_in = !io_in[3]; //SPI uses active low
 wire scan_in = io_in[4];
+wire btn_in = io_in[5];
 wire scan_out, halt_out;
 
 wire miso = scan_enable_in ? scan_out :
@@ -43,7 +44,7 @@ assign io_out[7] = miso;
 assign io_out[6:0] = led_out;
 
 accumulator_microcontroller #(
-    .MEM_SIZE(18)
+    .MEM_SIZE(17)
 ) 
 qtcore
 (
@@ -54,6 +55,7 @@ qtcore
     .scan_out(scan_out),
     .proc_en(proc_enable_in),
     .halt(halt_out),
+    .btn_in(btn_in),
     .led_out(led_out)
 );
 endmodule

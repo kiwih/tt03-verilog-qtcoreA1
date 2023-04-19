@@ -1,29 +1,8 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 04/08/2023 04:00:20 PM
-// Design Name: 
-// Module Name: memory_bank
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
-
 module memory_bank #(
     parameter ADDR_WIDTH = 5,
     parameter DATA_WIDTH = 8,
-    parameter MEM_SIZE = 32
+    parameter MEM_SIZE = 31, // Reduce memory size by 1 to accommodate IO
+    parameter IO_ADDR = MEM_SIZE
 )(
     input wire clk,
     input wire rst,
@@ -34,13 +13,13 @@ module memory_bank #(
     input wire scan_enable,
     input wire scan_in,
     output wire scan_out,
-
-    output wire [6:0] led_out
+    input wire btn_in, // Button input
+    output wire [6:0] led_out // 7-bit LED output
 );
 
     // Generate an array of shift registers for the memory
     wire [DATA_WIDTH-1:0] mem_data_out [0:MEM_SIZE-1];
-    wire mem_scan_out [0:MEM_SIZE-1];
+    wire mem_scan_out [0:MEM_SIZE-1]; 
 
     genvar i;
     generate
@@ -60,53 +39,52 @@ module memory_bank #(
         end
     endgenerate
 
+    // IO shift registers
+    wire [6:0] led_data_out;
+    wire btn_data_out;
+    wire io_scan_out; // New wire to connect scan_out of led_shift_register to scan_in of btn_shift_register
+    
+    shift_register #(
+        .WIDTH(7)
+    ) led_shift_register (
+        .clk(clk),
+        .rst(rst),
+        .enable(write_enable && (address == IO_ADDR)),
+        .data_in(data_in[7:1]), // Read from upper 7 bits of data_in
+        .data_out(led_data_out),
+        .scan_enable(scan_enable),
+        .scan_in(io_scan_out), // Connect the new wire to the scan_in
+        .scan_out(scan_out)
+    );
+
+    shift_register #(
+        .WIDTH(1)
+    ) btn_shift_register (
+        .clk(clk),
+        .rst(rst),
+        .enable(1'b1), // Enable the btn_shift_register, always read the status of the button input
+        .data_in(btn_in),
+        .data_out(btn_data_out),
+        .scan_enable(scan_enable),
+        .scan_in(mem_scan_out[MEM_SIZE-1]),
+        .scan_out(io_scan_out) // Connect the new wire to the scan_out
+    );
+
     // Read operation
     integer idx;
     always @(*) begin
-//        data_out = {DATA_WIDTH{1'b0}};
-//        for (idx = 0; idx < MEM_SIZE; idx = idx + 1) begin
-//            if (address == idx) begin
-//                data_out = mem_data_out[idx];
-//            end
-//        end
-        data_out = mem_data_out[address];
+        data_out = {DATA_WIDTH{1'b0}};
+        for (idx = 0; idx < MEM_SIZE; idx = idx + 1) begin
+            if (address == idx) begin
+                data_out = mem_data_out[idx];
+            end
+        end
+        if (address == IO_ADDR) begin
+            data_out = {led_data_out, btn_data_out}; // Place btn_data_out at the LSB
+        end
     end
 
-    // Scan chain output
-    assign scan_out = mem_scan_out[MEM_SIZE-1];
-    
-    assign led_out = mem_data_out[MEM_SIZE-1][6:0];
-    
-//    reg [7:0] register_bank [0:31];
-
-//    integer i;
-//    always @(posedge clk or posedge reset) begin
-//        if (reset) begin
-//            for (i = 0; i < 32; i = i + 1) begin
-//                register_bank[i] <= 8'b0;
-//            end
-//        end else begin
-//            if (scan_enable) begin
-//                if (shift_left) begin
-//                    for (i = 0; i < 31; i = i + 1) begin
-//                        register_bank[i] <= register_bank[i + 1];
-//                    end
-//                    register_bank[31] <= data_in;
-//                end else begin
-//                    for (i = 31; i > 0; i = i - 1) begin
-//                        register_bank[i] <= register_bank[i - 1];
-//                    end
-//                    register_bank[0] <= data_in;
-//                end
-//            end else begin
-//                register_bank[addr] <= data_in;
-//            end
-//        end
-//    end
-
-//    assign data_out = register_bank[addr];
+    // Assign LED output
+    assign led_out = led_data_out;
 
 endmodule
-
-
-
