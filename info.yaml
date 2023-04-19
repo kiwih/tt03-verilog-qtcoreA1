@@ -26,7 +26,7 @@ documentation:
   author:       "Hammond Pearce"
   title:        "QTCore-A1"
   language:     "Verilog"
-  description:  "An accumulator-based 8-bit microarchitecture design."
+  description:  "An accumulator-based 8-bit microarchitecture designed via a GPT-4 conversation."
 
 # Longer description of how the project works. You can use standard markdown format.
   how_it_works: |
@@ -55,7 +55,229 @@ documentation:
       The ISA description follows. 
       For your convenience, we also provide an assembler in Python (also written by GPT-4) which makes it quite easy to write simple programs.
 
-      TODO
+      ### Immediate Data Manipulation Instructions
+      - ADDI: Add 4-bit Immediate to Accumulator
+        - Opcode (4 bits): 1110
+        - Immediate (4 bits): 4-bit Immediate
+        - Register Effects: ACC <- ACC + IMM
+
+      ### Instructions with Variable-Data Operands
+      - LDA: Load Accumulator with memory contents
+        - Opcode (3 bits): 000
+        - Operand (5 bits): Memory Address
+        - Register Effects: ACC <- M[Address]
+
+      - STA: Store Accumulator to memory
+        - Opcode (3 bits): 001
+        - Operand (5 bits): Memory Address
+        - Register Effects: M[Address] <- ACC
+
+      - ADD: Add memory contents to Accumulator
+        - Opcode (3 bits): 010
+        - Operand (5 bits): Memory Address
+        - Register Effects: ACC <- ACC + M[Address]
+
+      - SUB: Subtract memory contents from Accumulator
+        - Opcode (3 bits): 011
+        - Operand (5 bits): Memory Address
+        - Register Effects: ACC <- ACC - M[Address]
+
+      - AND: AND memory contents with Accumulator
+        - Opcode (3 bits): 100
+        - Operand (5 bits): Memory Address
+        - Register Effects: ACC <- ACC & M[Address]
+
+      - OR: OR memory contents with Accumulator
+        - Opcode (3 bits): 101
+        - Operand (5 bits): Memory Address
+        - Register Effects: ACC <- ACC | M[Address]
+
+      - XOR: XOR memory contents with Accumulator
+        - Opcode (3 bits): 110
+        - Operand (5 bits): Memory Address
+        - Register Effects: ACC <- ACC ^ M[Address]
+
+      ### Control and Branching Instructions
+      - JMP: Jump to memory address
+        - Opcode (8 bits): 11110000
+        - PC Behavior: PC <- ACC (Load the PC with the address stored in the accumulator)
+
+      - JSR: Jump to Subroutine (save address to ACC)
+        - Opcode (8 bits): 11110001
+        - PC Behavior: ACC <- PC + 1, PC <- ACC (Save the next address in ACC, then jump to the address in ACC)
+
+      - BEQ_FWD: Branch if equal, forward (branch if ACC == 0)
+        - Opcode (8 bits): 11110010
+        - PC Behavior: If ACC == 0, then PC <- PC + 3 (Jump 2 instructions forward if ACC is zero)
+
+      - BEQ_BWD: Branch if equal, backward (branch if ACC == 0)
+        - Opcode (8 bits): 11110011
+        - PC Behavior: If ACC == 0, then PC <- PC - 2 (Jump 1 instruction backward if ACC is zero)
+
+      - BNE_FWD: Branch if not equal, forward (branch if ACC != 0)
+        - Opcode (8 bits): 11110100
+        - PC Behavior: If ACC != 0, then PC <- PC + 3 (Jump 2 instructions forward if ACC is non-zero)
+
+      - BNE_BWD: Branch if not equal, backward (branch if ACC != 0)
+        - Opcode (8 bits): 11110101
+        - PC Behavior: If ACC != 0, then PC <- PC - 2 (Jump 1 instruction backward if ACC is non-zero)
+
+      - HLT: Halt the processor until reset
+        - Opcode (8 bits): 11111111
+        - PC Behavior: Stop execution (PC does not change until a reset occurs)
+
+      ### Data Manipulation Instructions
+      - SHL: Shift Accumulator left
+        - Opcode (8 bits): 11110110
+        - Register Effects: ACC <- ACC << 1
+
+      - SHR: Shift Accumulator right
+        - Opcode (8 bits): 11110111
+        - Register Effects: ACC <- ACC >> 1
+
+      - SHL4: Shift Accumulator left by 4 bits
+        - Opcode (8 bits): 11111000
+        - Register Effects: ACC <- ACC << 4
+
+      - ROL: Rotate Accumulator left
+        - Opcode (8 bits): 11111001
+        - Register Effects: ACC <- (ACC << 1) OR (ACC >> 7)
+
+      - ROR: Rotate Accumulator right
+        - Opcode (8 bits): 11111010
+        - Register Effects: ACC <- (ACC >> 1) OR (ACC << 7)
+
+      - LDAR: Load Accumulator via indirect memory access (ACC as ptr)
+        - Opcode (8 bits): 11111011
+        - Register Effects: ACC <- M[ACC]
+
+      - DEC: Decrement Accumulator
+        - Opcode (8 bits): 11111100
+        - Register Effects: ACC <- ACC - 1
+
+      - CLR: Clear (Zero) Accumulator
+        - Opcode (8 bits): 11111101
+        - Register Effects: ACC <- 0
+
+      - INV: Invert (NOT) Accumulator
+        - Opcode (8 bits): 11111110
+        - Register Effects: ACC <- ~ACC
+
+      ## Example programming using the assembler
+
+      Writing assembly programs for QTCore-A1 is simplified by the assembler produced by GPT-4. First, we define two additional meta-instructions:
+      
+      ### Meta-instructions:
+
+      - NOP: Do nothing
+        - Implemented as ADDI 0
+
+      - DATA: Define raw data to be loaded at the current address
+        - Operand (8 bits): 8-bit data value
+
+      ### Presenting programs to the assembler:
+      
+      1. Programs are presented in the format `[address]: [mnemonic] [optional operand]`
+      2. There is a special meta-instruction called DATA, which is followed by a number. If this is used, just place that number at that address.
+      3. Programs cannot exceed the size of the memory (in Tiny Tapeout 3, this is 17 bytes including the IO register).
+      4. The memory contains both instructions and data.
+
+      ### Example program:
+      An interesting example program is presented. This assumes a button is connected to the general purpose input, and some LEDs are connected to the LED output.
+
+      We assume this file is called `test_btn_led.asm`:
+      ```
+      ; This program tests the btn and LEDs
+      ; It will wait for low->high transitions on the button input. 
+      ; After receiving this, it will toggle a set of LEDs.
+      ;
+      ; BTNs and LEDS are at address 17, btn at LSB
+      0: LDA 17 ; load the btn and LEDS
+      1: AND 16 ; mask the btn
+      2: BNE_BWD ; if btn&1 is not zero then branch back to 0
+      3: LDA 17 ; load the btn and LEDS
+      4: AND 16 ; mask the btn
+      5: BEQ_BWD ; if btn&1 is zero then branch back to 3
+      ;
+      ; the button has now done a transition from low to high
+      ;
+      6: LDA 14 ; load the counter toggle
+      7: XOR 16 ; toggle the counter using the btn mask
+      8: STA 14 ; store the counter value
+      9: ADDI 14 ; get the counter value offset (if 0, will be 14 (which is 0), if 1, 15)
+      10: LDAR ; load the counter LED pattern
+      11: STA 17 ; store the LED pattern
+      12: CLR
+      13: JMP
+      ;
+      ; data
+      ;
+      14: DATA 0; toggle and LED pattern 0
+      15: DATA 24; LED pattern of ON (test for led_out=value 12, since 24>>1 == 12)
+      16: DATA 1 ; btn and counter mask
+      ```
+      
+      To compile this program, we would invoke the assembler as follows:
+      
+      ```
+      $ ./assembler.py test_btn_led.asm
+      ```
+
+      The assembler will generate the following files for us:
+      - `test_btn_led.bin`: This is a binary representation of the assembly program. It can be used, or we can use one of the helper formats...
+      - `test_btn_led.memarray.v`: This provides the binary ready for use in a Verilog test bench to directly write to the memory of the processor.
+      - `test_btn_led.scanchain.v`: This provides the binary ready for use in the provided Verilog test bench which loads and unloads programs via the scan chain.
+      - `test_btn_led.c`: This provides the binary as an array suitable for use in a C program on an external microcontroller which can load it into the processor via SPI.
+
+      ### Processor operation
+
+      The processor executes all instructions via 2 stages (multi-cycle).
+      
+      The timing is as follows. Note the branch instructions are +2/-3 due to the already-incremented PC in the fetch stage.
+
+      **FETCH cycle (all instructions)**
+
+      1. IR <- M[PC]
+      2. PC <- PC + 1
+
+      **EXECUTE cycle**
+
+      For **Immediate Data Manipulation Instructions**:
+
+      * ADDI: ACC <- ACC + IMM
+
+      For **Instructions with Variable-Data Operands**:
+
+      * LDA: ACC <- M[Address]
+      * STA: M[Address] <- ACC
+      * ADD: ACC <- ACC + M[Address]
+      * SUB: ACC <- ACC - M[Address]
+      * AND: ACC <- ACC & M[Address]
+      * OR:  ACC <- ACC | M[Address]
+      * XOR: ACC <- ACC ^ M[Address]
+
+      For **Control and Branching Instructions**:
+
+      * JMP: PC <- ACC
+      * JSR: ACC <- PC, PC <- ACC
+      * BEQ_FWD: If ACC == 0, then PC <- PC + 2
+      * BEQ_BWD: If ACC == 0, then PC <- PC - 3
+      * BNE_FWD: If ACC != 0, then PC <- PC + 2
+      * BNE_BWD: If ACC != 0, then PC <- PC - 3
+      * HLT: (No operation, processor halted)
+
+      For **Data Manipulation Instructions**:
+
+      * SHL: ACC <- ACC << 1
+      * SHR: ACC <- ACC >> 1
+      * SHL4: ACC <- ACC << 4
+      * ROL: ACC <- (ACC << 1) OR (ACC >> 7)
+      * ROR: ACC <- (ACC >> 1) OR (ACC << 7)
+      * LDAR: ACC <- M[ACC]
+      * DEC: ACC <- ACC - 1
+      * CLR: ACC <- 0
+      * INV: ACC <- ~ACC
+
 
 # Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
   how_to_test:  |
