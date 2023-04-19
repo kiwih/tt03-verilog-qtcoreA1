@@ -30,10 +30,32 @@ documentation:
 
 # Longer description of how the project works. You can use standard markdown format.
   how_it_works: |
-      A scan chain loads in and out the design to execute the processor. 
-      Enable signals for scan chain and processor operation.
+      The QTCore-A1 is a basic accumulator-based 8-bit microarchitecture (with an emphasis on the micro). It is a Von Neumann design (shared data and instruction memory).
+      
+      Although primarily designed for Tiny Tapeout 3, it is parameterized and may be synthesized to FPGAs (and a project file for CMOD A7 is provided on the project GitHub).
 
-      Scan chain output on output 7.
+      Probably the most interesting thing about this design is that all functional Verilog beyond the Tiny Tapeout wrapper was written by GPT-4, i.e. not a human! 
+      The author (Hammond Pearce) developed with GPT-4 first the ISA, then the processor, fully conversationally. Hammond wrote the test-benches to validate the design, and then had the
+      appropriate back-and-forth with GPT-4 to have it fix all bugs.
+      For your interest, we will provide all conversation logs in the project repository.
+
+      The architecture defines a processor with the following components:
+      - Control Unit: 2-cycle FSM for driving the processor (3 bit one-hot encoded state register)
+      - Program Counter: 5-bit register containing the current address of the program
+      - Instruction Register: 8-bit register containing the current instruction to execute
+      - Accumulator: 8-bit register used for data storage, manipulation, and logic
+      - Memory Bank: 17 8-bit registers which store instructions and data. The 17th register is used for I/O.
+
+      In order to interact with the processor, all registers are connected via one large scan chain.
+      As such, you can use an external microcontroller's SPI peripheral to read and write the status of the processor.
+      We use the SPI clock SPI_SCK as the clock to drive both the QTCore-A1 and the scan chain.
+      You choose which you are using by asserting the appropriate chip select.
+      This makes it quite easy to interact with the processor.
+
+      The ISA description follows. 
+      For your convenience, we also provide an assembler in Python (also written by GPT-4) which makes it quite easy to write simple programs.
+
+      TODO
 
 # Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
   how_to_test:  |
@@ -41,24 +63,24 @@ documentation:
 
 # A description of what the inputs do
   inputs:               
-    - clock
-    - reset
-    - scan enable
-    - processor enable
-    - scan data in
-    - none
+    - clock - connect to an SPI SCK.
+    - reset (active high)
+    - scan enable (active low) - connect to an SPI chip select.
+    - processor enable (active low) - connect to an SPI chip select.
+    - scan data in - connect to an SPI MOSI.
+    - general purpose input (e.g. Button). This input will be provided to the I/O register bit 0.
     - none
     - none
 # A description of what the outputs do
   outputs:
-    - segment a
-    - segment b
-    - segment c
-    - segment d
-    - segment e
-    - segment f
-    - segment g
-    - scan data out
+    - general purpose output 0 (e.g. LED segment a). This output comes from the I/O register bit 1.
+    - general purpose output 1 (e.g. LED segment b). This output comes from the I/O register bit 2.
+    - general purpose output 2 (e.g. LED segment c). This output comes from the I/O register bit 3.
+    - general purpose output 3 (e.g. LED segment d). This output comes from the I/O register bit 4.
+    - general purpose output 4 (e.g. LED segment e). This output comes from the I/O register bit 5.
+    - general purpose output 5 (e.g. LED segment f). This output comes from the I/O register bit 6.
+    - general purpose output 6 (e.g. LED segment g). This output comes from the I/O register bit 7.
+    - scan data out - connect to an SPI MISO.
 
 # The following fields are optional
   tag:          "processor, test"      # comma separated list of tags: test encryption, experiment, clock, animation, utility, industrial, pwm, fpga, alu, microprocessor, risc, riscv, sensor, signal generator, fft, filter, music, bcd, sound, serial, timer, random number generator, calculator, decoder, counter, puzzle, multiplier, game, oscillator,

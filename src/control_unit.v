@@ -1,22 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: New York University
+// Engineer: ChatGPT GPT-4 Mar 23 version; Hammond Pearce (prompting + assembly)
 // 
-// Create Date: 04/12/2023 01:13:51 PM
-// Design Name: 
-// Module Name: control_unit
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
+// Last Edited Date: 04/19/2023
 //////////////////////////////////////////////////////////////////////////////////
 
 module isa_to_alu_opcode (
@@ -69,38 +56,39 @@ module control_unit (
     output reg processor_halted, // Processor halted signal
     input wire [7:0] instruction, // Input from the Instruction Register (IR)
     input wire ZF, // Zero Flag input, true when ACC is zero
-    
+
     output reg PC_write_enable, // Enables writing to the PC
     output reg [1:0] PC_mux_select, // Selects the input for the PC multiplexer
     // 00: PC + 1 (FETCH cycle)
     // 01: ACC (JMP, JSR)
     // 10: PC - 3 (BEQ_BWD, BNE_BWD)
     // 11: PC + 2 (BEQ_FWD, BNE_FWD)
-    
+
     output reg ACC_write_enable, // Enables writing to the ACC
     output reg [1:0] ACC_mux_select, // Selects the input for the ACC multiplexer
     // 00: ALU output
     // 01: Memory contents (LDA, LDAR)
     // 10: PC (JSR)
-    
+
     output reg IR_load_enable, // Enables loading new instruction into IR from memory
-    
+
     output wire [3:0] ALU_opcode, // Control signal specifying the ALU operation
     output reg ALU_inputB_mux_select, // Selects input B for the ALU multiplexer
     // 0: Memory contents (ADD, SUB, AND, OR, XOR)
     // 1: Immediate (ADDI)
-    
+
     output reg Memory_write_enable, // Enables writing to memory (STA)
     output reg [1:0] Memory_address_mux_select, // Selects input for memory address multiplexer
     // 00: IR[4:0] (LDA, STA, ADD, SUB, AND, OR, XOR)
     // 01: ACC (LDAR)
     // 10: PC (Instruction fetching)
-    
+
     // Scan chain signals
     input wire scan_enable, // Scan chain enable signal
     input wire scan_in, // Scan chain input
     output wire scan_out // Scan chain output
 );
+
 
 
 
@@ -126,59 +114,67 @@ module control_unit (
     .scan_out(scan_out)
   );
 
-  // Combinational logic for state_in
-  always @(*) begin
-    // Default state: stay in the current state
-    state_in = state_out;
-    processor_halted = 0;
+ // Combinational logic for state_in and processor_halted
+ always @(*) begin
+  // Default state: stay in the current state
+  state_in = state_out;
 
-    // Only advance state if processor_enable is asserted
-    if (processor_enable) begin
-      case (state_out)
-        STATE_RESET: begin
-          // Move to STATE_FETCH when reset occurs
-          if (!rst) begin
-            state_in = STATE_FETCH;
-          end
-        end
+  // Default processor_halted: set to 0
+  processor_halted = 0;
 
-        STATE_FETCH: begin
-          // If the processor is halted, stay in the HALT state
-          if (instruction == 8'b11111111) begin
-            state_in = STATE_HALT;
-          end
-          // Otherwise, move to the EXECUTE state
-          else begin
-            state_in = STATE_EXECUTE;
-          end
-        end
-
-        STATE_EXECUTE: begin
-          // If the processor is halted, move to the HALT state
-          if (instruction == 8'b11111111) begin
-            state_in = STATE_HALT;
-          end
-          // Otherwise, move back to the FETCH state
-          else begin
-            state_in = STATE_FETCH;
-          end
-        end
-
-        STATE_HALT: begin
-        processor_halted = 1;
-          // Stay in HALT state unless reset occurs
-          if (rst) begin
-            state_in = STATE_FETCH;
-          end
-        end
-
-        default: begin
-          // Default behavior (should never be reached in this implementation)
+  // Only advance state and update processor_halted if processor_enable is asserted
+  if (processor_enable) begin
+    case (state_out)
+      STATE_RESET: begin
+        // Move to STATE_FETCH when reset input is low
+        if (!rst) begin
           state_in = STATE_FETCH;
         end
-      endcase
-    end
+      end
+
+      STATE_FETCH: begin
+        // If the processor is halted, stay in the HALT state
+        if (instruction == 8'b11111111) begin
+          state_in = STATE_HALT;
+        end
+        // Otherwise, move to the EXECUTE state
+        else begin
+          state_in = STATE_EXECUTE;
+        end
+      end
+
+      STATE_EXECUTE: begin
+        // If the processor is halted, move to the HALT state
+        if (instruction == 8'b11111111) begin
+          state_in = STATE_HALT;
+        end
+        // Otherwise, move back to the FETCH state
+        else begin
+          state_in = STATE_FETCH;
+        end
+      end
+
+      STATE_HALT: begin
+        // Stay in HALT state unless reset occurs
+        if (rst) begin
+          state_in = STATE_FETCH;
+        end
+        // Otherwise, maintain the HALT state and set processor_halted
+        else begin
+          processor_halted = 1;
+        end
+      end
+
+      default: begin
+        // Default behavior (should never be reached in this implementation)
+        state_in = STATE_FETCH;
+        processor_halted = 0;
+      end
+    endcase
   end
+end
+
+
 
   // Control signals go here
   // Instantiate ALU ISA decoder
@@ -191,7 +187,8 @@ module control_unit (
     // Default values
     PC_write_enable = 1'b0;
     PC_mux_select = 2'b00;
-    if(processor_enable) begin
+
+    if (processor_enable) begin
         case (state_out)
             STATE_FETCH: begin
                 PC_write_enable = 1'b1;
@@ -242,76 +239,81 @@ always @(*) begin
   // Default values
   ACC_write_enable = 1'b0;
   ACC_mux_select = 2'b00;
-  if(processor_enable) begin
-      // Check if the current state is EXECUTE
-      if (state_out == STATE_EXECUTE) begin
-        // Immediate Data Manipulation Instructions
-        if (instruction[7:4] == 4'b1110) begin // ADDI
+
+  if (processor_enable) begin
+    // Check if the current state is EXECUTE
+    if (state_out == STATE_EXECUTE) begin
+      // Immediate Data Manipulation Instructions
+      if (instruction[7:4] == 4'b1110) begin // ADDI
+        ACC_write_enable = 1'b1;
+        ACC_mux_select = 2'b00; // ALU output
+      end
+
+      // Instructions with Variable-Data Operands
+      case (instruction[7:5])
+        3'b000: begin // LDA
           ACC_write_enable = 1'b1;
-          ACC_mux_select = 2'b00; // ALU output
+          ACC_mux_select = 2'b01; // Memory contents
         end
-    
-        // Instructions with Variable-Data Operands
-        case (instruction[7:5])
-          3'b000: begin // LDA
-            ACC_write_enable = 1'b1;
-            ACC_mux_select = 2'b01; // Memory contents
-          end
-          3'b001: ; // STA (No effect on ACC)
-          3'b010,
-          3'b011,
-          3'b100,
-          3'b101,
-          3'b110: ACC_write_enable = 1'b1; // ADD, SUB, AND, OR, XOR
-        endcase
-    
-        // Control and Branching Instructions
-        case (instruction)
-          8'b11110001: begin // JSR
-            ACC_write_enable = 1'b1;
-            ACC_mux_select = 2'b10; // PC
-          end
-        endcase
-    
-        // Data Manipulation Instructions
-        case (instruction)
-          8'b11110110,
-          8'b11110111,
-          8'b11111000,
-          8'b11111001,
-          8'b11111010,
-          8'b11111100,
-          8'b11111101,
-          8'b11111110: ACC_write_enable = 1'b1; // SHL, SHR, SHL4, ROL, ROR, DEC, CLR, INV
-          8'b11111011: begin // LDAR
-            ACC_write_enable = 1'b1;
-            ACC_mux_select = 2'b01; // Memory contents
-          end
-        endcase
-    
-      end // if (state_out == STATE_EXECUTE)
-   end
+        3'b001: ; // STA (No effect on ACC)
+        3'b010,
+        3'b011,
+        3'b100,
+        3'b101,
+        3'b110: ACC_write_enable = 1'b1; // ADD, SUB, AND, OR, XOR
+      endcase
+
+      // Control and Branching Instructions
+      case (instruction)
+        8'b11110001: begin // JSR
+          ACC_write_enable = 1'b1;
+          ACC_mux_select = 2'b10; // PC
+        end
+      endcase
+
+      // Data Manipulation Instructions
+      case (instruction)
+        8'b11110110,
+        8'b11110111,
+        8'b11111000,
+        8'b11111001,
+        8'b11111010,
+        8'b11111100,
+        8'b11111101,
+        8'b11111110: ACC_write_enable = 1'b1; // SHL, SHR, SHL4, ROL, ROR, DEC, CLR, INV
+        8'b11111011: begin // LDAR
+          ACC_write_enable = 1'b1;
+          ACC_mux_select = 2'b01; // Memory contents
+        end
+      endcase
+
+    end // if (state_out == STATE_EXECUTE)
+  end // if (processor_enable)
 end
 
 always @(*) begin
     // Default: IR_load_enable is 0 (disabled)
     IR_load_enable = 1'b0;
 
-    // During FETCH cycle, set IR_load_enable to 1 (enabled)
-    if (processor_enable && state_out == STATE_FETCH) begin
-        IR_load_enable = 1'b1;
+    if (processor_enable) begin
+        // During FETCH cycle, set IR_load_enable to 1 (enabled)
+        if (state_out == STATE_FETCH) begin
+            IR_load_enable = 1'b1;
+        end
     end
 end
+
 
 always @(*) begin
     // Default: ALU_inputB_mux_select is 0 (memory contents)
     ALU_inputB_mux_select = 1'b0;
 
     // Immediate Data Manipulation Instructions
-    if (processor_enable && instruction[7:4] == 4'b1110) begin // ADDI
+    if (instruction[7:4] == 4'b1110) begin // ADDI
         ALU_inputB_mux_select = 1'b1; // Select immediate value as input B
     end
 end
+
 
 always @(*) begin
     // Default: Memory_write_enable is 0 (disabled)
@@ -320,7 +322,7 @@ always @(*) begin
     // Default: Memory_address_mux_select is 00 (IR[4:0])
     Memory_address_mux_select = 2'b00;
 
-    if(processor_enable) begin
+    if (processor_enable) begin
         if (state_out == STATE_EXECUTE) begin
             // Instructions with Variable-Data Operands
             case (instruction[7:5])
@@ -328,7 +330,7 @@ always @(*) begin
                     Memory_write_enable = 1'b1; // Enable writing to memory
                 end
             endcase
-    
+
             // Data Manipulation Instructions
             case (instruction[7:0])
                 8'b11111011: begin // LDAR
@@ -336,13 +338,14 @@ always @(*) begin
                 end
             endcase
         end
-    
+
         // Instruction fetching
         if (state_out == STATE_FETCH) begin
             Memory_address_mux_select = 2'b10; // Select PC as memory address
         end
     end
 end
+
 
 
 
