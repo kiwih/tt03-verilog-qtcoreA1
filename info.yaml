@@ -40,11 +40,12 @@ documentation:
       For your interest, we will provide all conversation logs in the project repository.
 
       The architecture defines a processor with the following components:
-      - Control Unit: 2-cycle FSM for driving the processor (3 bit one-hot encoded state register)
-      - Program Counter: 5-bit register containing the current address of the program
-      - Instruction Register: 8-bit register containing the current instruction to execute
-      - Accumulator: 8-bit register used for data storage, manipulation, and logic
-      - Memory Bank: 17 8-bit registers which store instructions and data. The 17th register is used for I/O.
+
+      * Control Unit: 2-cycle FSM for driving the processor (3 bit one-hot encoded state register)
+      * Program Counter: 5-bit register containing the current address of the program
+      * Instruction Register: 8-bit register containing the current instruction to execute
+      * Accumulator: 8-bit register used for data storage, manipulation, and logic
+      * Memory Bank: 17 8-bit registers which store instructions and data. The 17th register is used for I/O.
 
       In order to interact with the processor, all registers are connected via one large scan chain.
       As such, you can use an external microcontroller's SPI peripheral to read and write the status of the processor.
@@ -226,10 +227,11 @@ documentation:
       ```
 
       The assembler will generate the following files for us:
-      - `test_btn_led.bin`: This is a binary representation of the assembly program. It can be used, or we can use one of the helper formats...
-      - `test_btn_led.memarray.v`: This provides the binary ready for use in a Verilog test bench to directly write to the memory of the processor.
-      - `test_btn_led.scanchain.v`: This provides the binary ready for use in the provided Verilog test bench which loads and unloads programs via the scan chain.
-      - `test_btn_led.c`: This provides the binary as an array suitable for use in a C program on an external microcontroller which can load it into the processor via SPI.
+
+      * `test_btn_led.bin`: This is a binary representation of the assembly program. It can be used, or we can use one of the helper formats...
+      * `test_btn_led.memarray.v`: This provides the binary ready for use in a Verilog test bench to directly write to the memory of the processor.
+      * `test_btn_led.scanchain.v`: This provides the binary ready for use in the provided Verilog test bench which loads and unloads programs via the scan chain.
+      * `test_btn_led.c`: This provides the binary as an array suitable for use in a C program on an external microcontroller which can load it into the processor via SPI.
 
       ### Processor operation
 
@@ -292,12 +294,13 @@ documentation:
       This is because we use the SPI SCK as the clock for both the scan chain and the processor.
 
       Connect the I/O according to the provided wiring table. Then, set the SPI peripheral to the following settings:
-      - SPI Mode 0
-      - 8-bit data
-      - MSB first
-      - A very slow clock (I used 1kHz)
-      - The scan chain chip select is active low
-      - The processor chip select is active low
+      
+      * SPI Mode 0
+      * 8-bit data
+      * MSB first
+      * A very slow clock (I used 1kHz)
+      * The scan chain chip select is active low
+      * The processor chip select is active low
 
       ### Loading a program
 
