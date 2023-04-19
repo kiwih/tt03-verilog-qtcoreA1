@@ -1,0 +1,13 @@
+#-----------------------------------------------------------
+# Vivado v2022.1 (64-bit)
+# SW Build 3526262 on Mon Apr 18 15:47:01 MDT 2022
+# IP Build 3524634 on Mon Apr 18 20:55:01 MDT 2022
+# Start of session at: Wed Apr 19 11:22:14 2023
+# Process ID: 220287
+# Current directory: /home/hammond/Documents/vivado_projs/tt03-verilog-qtcoreA1/vivado_proj/qtcore_a1_vivado/qtcore_a1_vivado.runs/synth_1
+# Command line: vivado -log cmod_a7_top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source cmod_a7_top.tcl
+# Log file: /home/hammond/Documents/vivado_projs/tt03-verilog-qtcoreA1/vivado_proj/qtcore_a1_vivado/qtcore_a1_vivado.runs/synth_1/cmod_a7_top.vds
+# Journal file: /home/hammond/Documents/vivado_projs/tt03-verilog-qtcoreA1/vivado_proj/qtcore_a1_vivado/qtcore_a1_vivado.runs/synth_1/vivado.jou
+# Running On: hammond-GS66, OS: Linux, CPU Frequency: 4500.012 MHz, CPU Physical cores: 6, Host memory: 16583 MB
+#-----------------------------------------------------------
+source cmod_a7_top.tcl -notrace

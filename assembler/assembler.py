@@ -108,3 +108,16 @@ scan_chain[23:16] = 8'h00; //ACC = 0x00
     memaddr = 31
     for addr, value in binary_program:
         f.write(f'scan_chain[{memaddr + addr*8} -: 8] = 8\'b{value};\n')
+
+# save the assembled program to a file with the same name as the input file but with .v extension
+with open(sys.argv[1].replace('.asm', '.c'), 'w') as f:
+    f.write("uint8_t program[] = {\n")
+    f.write('\t0b00000000, //IOREG\n')
+    # reverse the program so that the first instruction is at the end of the array
+    binary_program.reverse()
+    for addr, value in binary_program:
+        f.write(f'\t0b{value}, //MEM[{addr}]\n')
+    f.write('\t0b00000000, //ACC\n')
+    f.write('\t0b00000000, //IR\n')
+    f.write('\t0b00000001 //PC[5bit], CU[3bit]\n')
+    f.write('};')
