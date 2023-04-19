@@ -1,22 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: ChatGPT GPT-4 Mar 23 version 
+// Company: New York University
+// Engineer: ChatGPT GPT-4 Mar 23 version; Hammond Pearce (prompting)
 // 
-// Create Date: 04/08/2023 11:24:54 AM
-// Design Name: 
-// Module Name: alu
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
+// Last Edited Date: 04/19/2023
 //////////////////////////////////////////////////////////////////////////////////
 
 

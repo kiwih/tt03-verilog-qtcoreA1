@@ -1,27 +1,12 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: New York University
+// Engineer: Hammond Pearce
 // 
-// Create Date: 04/18/2023 07:50:28 AM
-// Design Name: 
-// Module Name: qtcore_a1_4baddr_scan_test
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
+// Last Edited Date: 04/19/2023
 //////////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
-
-
 
 module qtcore_a1_4baddr_scan_test (
 

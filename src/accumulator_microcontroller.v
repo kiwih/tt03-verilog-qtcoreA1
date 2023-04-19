@@ -1,22 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: New York University
+// Engineer: ChatGPT GPT-4 Mar 23 version; Hammond Pearce (prompting + assembly + top-level module definition)
 // 
-// Create Date: 04/14/2023 10:20:55 AM
-// Design Name: 
-// Module Name: accumulator_microcontroller
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
+// Last Edited Date: 04/19/2023
 //////////////////////////////////////////////////////////////////////////////////
 
 
@@ -169,9 +156,11 @@ module accumulator_microcontroller #(
         .scan_in(acc_scan_out),
         .scan_out(memory_scan_out),
 
+        // Connect btn_in and led_out
         .btn_in(btn_in),
         .led_out(led_out)
     );
+
     
     // Instantiate Memory Address Multiplexer
     always @(*) begin

@@ -1,22 +1,9 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: New York University
+// Engineer: Hammond Pearce
 // 
-// Create Date: 04/18/2023 05:48:45 AM
-// Design Name: 
-// Module Name: tt_top
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
+// Last Edited Date: 04/19/2023
 //////////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
