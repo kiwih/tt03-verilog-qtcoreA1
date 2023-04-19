@@ -219,7 +219,7 @@ documentation:
       16: DATA 1 ; btn and counter mask
       ```
       
-      To compile this program, we would invoke the assembler as follows:
+      To compile this program, we would invoke the assembler (provided in the associated repository) as follows:
       
       ```
       $ ./assembler.py test_btn_led.asm
@@ -446,8 +446,8 @@ documentation:
 
 # The following fields are optional
   tag:          "processor, test"      # comma separated list of tags: test encryption, experiment, clock, animation, utility, industrial, pwm, fpga, alu, microprocessor, risc, riscv, sensor, signal generator, fft, filter, music, bcd, sound, serial, timer, random number generator, calculator, decoder, counter, puzzle, multiplier, game, oscillator,
-  external_hw:  "spi"      # Describe any external hardware needed
+  external_hw:  "Any microcontroller with an SPI peripheral"      # Describe any external hardware needed
   discord:      "HammondP#2054"      # Your discord handle, used for communication and automatically assigning tapeout role after a submission
   doc_link:     ""      # URL to longer form documentation, eg the README.md in your repository
-  clock_hz:     10000       # Clock frequency in Hz (if required)
+  clock_hz:     1000       # Clock frequency in Hz (if required)
   picture:      ""      # relative path to a picture in your repository
