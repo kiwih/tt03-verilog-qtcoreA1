@@ -1,25 +1,11 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: ChatGPT GPT-4 Mar 23 version 
+// Company: New York University
+// Engineer: ChatGPT GPT-4 Mar 23 version; Hammond Pearce (prompting)
 // 
-// Create Date: 04/08/2023 11:22:05 AM
-// Design Name: 
-// Module Name: shift_register
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
+// Last Edited Date: 04/19/2023
 //////////////////////////////////////////////////////////////////////////////////
 
-`default_nettype none
 module shift_register #(
     parameter WIDTH = 8
 )(
@@ -39,13 +25,14 @@ module shift_register #(
     always @(posedge clk) begin
         if (rst) begin
             internal_data <= {WIDTH{1'b0}};
-        end else if (!scan_enable && enable) begin
-            internal_data <= data_in;
         end else if (scan_enable) begin
-            if(WIDTH > 1)
+            if (WIDTH == 1) begin
+                internal_data <= scan_in;
+            end else begin
                 internal_data <= {internal_data[WIDTH-2:0], scan_in};
-            else
-                internal_data <= {scan_in};
+            end
+        end else if (enable) begin
+            internal_data <= data_in;
         end
     end
 

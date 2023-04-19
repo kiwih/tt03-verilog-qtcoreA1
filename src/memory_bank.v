@@ -1,3 +1,11 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: New York University
+// Engineer: ChatGPT GPT-4 Mar 23 version; Hammond Pearce (prompting)
+// 
+// Last Edited Date: 04/19/2023
+//////////////////////////////////////////////////////////////////////////////////
+
 module memory_bank #(
     parameter ADDR_WIDTH = 5,
     parameter DATA_WIDTH = 8,
@@ -42,7 +50,7 @@ module memory_bank #(
     // IO shift registers
     wire [6:0] led_data_out;
     wire btn_data_out;
-    wire io_scan_out; // New wire to connect scan_out of led_shift_register to scan_in of btn_shift_register
+    wire io_scan_out; // New wire to connect scan_out of btn_shift_register to scan_in of led_shift_register
     
     shift_register #(
         .WIDTH(1)
@@ -71,18 +79,13 @@ module memory_bank #(
     );
 
     // Read operation
-    integer idx;
     always @(*) begin
-        data_out = {DATA_WIDTH{1'b0}};
-        // for (idx = 0; idx < MEM_SIZE; idx = idx + 1) begin
-        //     if (address == idx) begin
-        //         data_out = mem_data_out[idx];
-        //     end
-        // end
-        if (address == IO_ADDR) begin
+        if (address < MEM_SIZE) begin
+            data_out = mem_data_out[address];
+        end else if (address == IO_ADDR) begin
             data_out = {led_data_out, btn_data_out}; // Place btn_data_out at the LSB
         end else begin
-            data_out = mem_data_out[address];
+            data_out = 8'b00000001; // Return "00000001" for all memory addresses outside the range
         end
     end
 
