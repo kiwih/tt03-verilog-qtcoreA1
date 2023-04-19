@@ -30,7 +30,7 @@ COMPILE_ARGS    += -DFUNCTIONAL
 COMPILE_ARGS    += -DUSE_POWER_PINS
 COMPILE_ARGS    += -DSIM
 COMPILE_ARGS    += -DUNIT_DELAY=#1
-COMPILE_ARGS	+= -PSCAN_ONLY=1
+COMPILE_ARGS	+= -DSCAN_ONLY
 # VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
 # VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
 VERILOG_SOURCES += primitives.v
@@ -40,7 +40,7 @@ VERILOG_SOURCES += sky130_fd_sc_hd.v
 VERILOG_SOURCES += $(COMPILE_ARGS) $(PWD)/qtcore_a1_4baddr_scan_test.v $(PWD)/gate_level_netlist.v
 
 test:
-	iverilog -P$(TOPLEVEL).SCAN_ONLY=1 -s $(TOPLEVEL) $(VERILOG_SOURCES)
+	iverilog -s $(TOPLEVEL) $(VERILOG_SOURCES)
 	
 endif
 

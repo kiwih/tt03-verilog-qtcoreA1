@@ -23,9 +23,7 @@
 
 
 
-module qtcore_a1_4baddr_scan_test #(
-    parameter SCAN_ONLY = 0
-    )(
+module qtcore_a1_4baddr_scan_test (
 
     );
     
@@ -118,7 +116,9 @@ module qtcore_a1_4baddr_scan_test #(
         $dumpfile("qtcore_a1_4baddr_scan_test.vcd");
         $dumpvars(0, qtcore_a1_4baddr_scan_test);
         scan_chain = 'b0;
-        $display("SCAN ONLY = %d", SCAN_ONLY);
+        `ifdef SCAN_ONLY
+            $display("SCAN ONLY");
+        `endif
         $display("TEST 1");
 
         // TEST PART 1: LOAD SCAN CHAIN
@@ -147,7 +147,8 @@ module qtcore_a1_4baddr_scan_test #(
         
         xchg_scan_chain;
         
-        if(SCAN_ONLY == 0) begin
+        `ifndef SCAN_ONLY
+            $display("scan not enabled, running internal checks");
             if(dut.qtcore.cu_inst.state_register.internal_data !== 3'b001) begin
                 $display("Wrong state reg value");
                 $finish;
@@ -180,7 +181,7 @@ module qtcore_a1_4baddr_scan_test #(
                 $display("Wrong mem[3] reg value");
                 $finish;
             end
-        end
+        `endif
 
         if(led_out !== 7'b1111000) begin
             $display("Wrong LED data out, got %b", led_out);
@@ -193,7 +194,7 @@ module qtcore_a1_4baddr_scan_test #(
         
         run_processor_until_halt(8, i); //two cycles per instruction, this should execute 4 instr
 
-        if(SCAN_ONLY == 0) begin
+        `ifndef SCAN_ONLY
             $display("ACC is: %b", dut.qtcore.ACC_inst.internal_data);
             if(dut.qtcore.ACC_inst.internal_data !== 8'hb) begin
                 $display("Wrong ACC reg value %d", dut.qtcore.ACC_inst.internal_data);
@@ -202,7 +203,7 @@ module qtcore_a1_4baddr_scan_test #(
             end
         
             $display("Instruction operation successful");
-        end
+        `endif
         scan_chain = 'b0;
 
         //TEST PART 3: UNLOAD SCAN CHAIN 
