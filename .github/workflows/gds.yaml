@@ -145,9 +145,9 @@ jobs:
         cp runs/wokwi/results/final/verilog/gl/*.v src/gate_level_netlist.v
         cd src
         make clean
-        # GATES=yes make
+        GATES=yes make
         # make will return success even if the test fails, so check for failure in the results.xml
-        # grep TEST_PASSES TEST_PASSES.txt
+        grep TEST_PASSES TEST_PASSES.txt
 
     # - name: upload vcd
     #   if: success() || failure()
@@ -156,7 +156,7 @@ jobs:
     #       name: gatelevel-test-vcd
     #       path: src/tb.vcd
 
-    - name: upload gate_level_netlist
+    - name: upload gate_level_netlist_and_vcd
       uses: actions/upload-artifact@v3
       with:
           name: gate_level_netlist
@@ -164,6 +164,7 @@ jobs:
             src/gate_level_netlist.v
             ${{ env.PDK_ROOT }}/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
             ${{ env.PDK_ROOT }}/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
+            src/*.vcd
 
 ##############################################################
 # Generate files for the 3D viewer

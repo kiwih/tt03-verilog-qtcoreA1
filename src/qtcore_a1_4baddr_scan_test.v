@@ -29,7 +29,7 @@ module qtcore_a1_4baddr_scan_test #(
 
     );
     
- localparam CLK_PERIOD = 10;
+ localparam CLK_PERIOD = 50;
     localparam CLK_HPERIOD = CLK_PERIOD/2;
 
     localparam FULL_MEM_SIZE = 17; //includes the IO register
@@ -42,6 +42,10 @@ module qtcore_a1_4baddr_scan_test #(
     wire [6:0] led_out;
     kiwih_tt_top dut
     (
+`ifdef USE_POWER_PINS
+        .vccd1(1'b1),
+        .vssd1(1'b0),
+`endif
         .io_in(io_in),
         .io_out(io_out)
     );
@@ -100,7 +104,7 @@ module qtcore_a1_4baddr_scan_test #(
     );
     begin
         proc_en_in = 1;
-        for (n_cycles = 0; n_cycles < max_cycles && (n_cycles < 2 || scan_out == 0) ; n_cycles = n_cycles + 1) begin //two cycles per instruction, this should execute 4 instr
+        for (n_cycles = 0; n_cycles < max_cycles && (n_cycles < 4 || scan_out == 0) ; n_cycles = n_cycles + 1) begin //two cycles per instruction, this should execute 4 instr
             #(CLK_PERIOD / 2);
             clk_in = 1;
             #(CLK_PERIOD / 2);
@@ -111,6 +115,8 @@ module qtcore_a1_4baddr_scan_test #(
     endtask
 
     initial begin
+        $dumpfile("qtcore_a1_4baddr_scan_test.vcd");
+        $dumpvars(0, qtcore_a1_4baddr_scan_test);
         scan_chain = 'b0;
         $display("SCAN ONLY = %d", SCAN_ONLY);
         $display("TEST 1");
@@ -174,13 +180,14 @@ module qtcore_a1_4baddr_scan_test #(
                 $display("Wrong mem[3] reg value");
                 $finish;
             end
-            if(led_out !== 7'b1111000) begin
-                $display("Wrong LED data out, got %b", led_out);
-                $finish;
-            end
-        
-            $display("Scan load successful");
         end
+
+        if(led_out !== 7'b1111000) begin
+            $display("Wrong LED data out, got %b", led_out);
+            $finish;
+        end
+    
+        $display("Scan load successful");
         
         //TEST PART 2: RUN PROCESSOR
         
