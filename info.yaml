@@ -163,7 +163,7 @@ documentation:
         - Opcode (8 bits): 11111110
         - Register Effects: ACC <- ~ACC
 
-      ## Example programming using the assembler
+      ### Example programming using the assembler
 
       Writing assembly programs for QTCore-A1 is simplified by the assembler produced by GPT-4. First, we define two additional meta-instructions:
       
@@ -204,7 +204,8 @@ documentation:
       6: LDA 14 ; load the counter toggle
       7: XOR 16 ; toggle the counter using the btn mask
       8: STA 14 ; store the counter value
-      9: ADDI 14 ; get the counter value offset (if 0, will be 14 (which is 0), if 1, 15)
+      9: ADDI 14 ; get the counter value offset 
+      ;            (if 0, will be 14 (which is 0), if 1, 15)
       10: LDAR ; load the counter LED pattern
       11: STA 17 ; store the LED pattern
       12: CLR
@@ -213,7 +214,8 @@ documentation:
       ; data
       ;
       14: DATA 0; toggle and LED pattern 0
-      15: DATA 24; LED pattern of ON (test for led_out=value 12, since 24>>1 == 12)
+      15: DATA 24; LED pattern of ON 
+      ;            (test for led_out=value 12, since 24>>1 == 12)
       16: DATA 1 ; btn and counter mask
       ```
       
@@ -284,7 +286,7 @@ documentation:
       The processor will not run unless a program is scanned into it.
       Fortunately, this is easy using the SPI peripheral of an external microcontroller.
 
-      ## Wiring the SPI
+      ### Wiring the SPI
 
       The QTCore-A1 is designed to be connected to an SPI peripheral along with two chip selects.
       This is because we use the SPI SCK as the clock for both the scan chain and the processor.
@@ -297,7 +299,7 @@ documentation:
       - The scan chain chip select is active low
       - The processor chip select is active low
 
-      ## Loading a program
+      ### Loading a program
 
       During the scan chain mode (when the scan enable is low), the entire processor acts as a giant shift register, with the bits in the following order:
       
@@ -328,7 +330,8 @@ documentation:
 
       C code to load the previously-discussed example program (e.g. via the STM32 HAL) is provided:
       ```
-      //The registers are presented in reverse order to the table as we load them MSB first.
+      //The registers are presented in reverse order to 
+      // the table as we load them MSB first.
       uint8_t program_led_btn[21] = {
           0b00000000, //IOREG
           0b00000001, //MEM[16]
@@ -367,13 +370,15 @@ documentation:
 
       //... this will go in your main or similar
       uint8_t *program = program_led_btn;
-      //on the first run, scan_out will give us the reset value of the processor
+      //on the first run, scan_out will give us the reset value of the 
+      // processor
       HAL_GPIO_WritePin(SPI_SCAN_CS_GPIO_Port, SPI_SCAN_CS_Pin, 0);
       HAL_Delay(100);
       HAL_SPI_TransmitReceive(&hspi1, program, scan_out, 21, HAL_MAX_DELAY);
       HAL_Delay(100);
       HAL_GPIO_WritePin(SPI_SCAN_CS_GPIO_Port, SPI_SCAN_CS_Pin, 1);
-      //we can check if the program loaded correctly by immediately scanning it back in again, it will be unloaded to scan_out
+      //we can check if the program loaded correctly by immediately scanning 
+      // it back in again, it will be unloaded to scan_out
       HAL_GPIO_WritePin(SPI_SCAN_CS_GPIO_Port, SPI_SCAN_CS_Pin, 0);
       HAL_Delay(100);
       HAL_SPI_TransmitReceive(&hspi1, program, scan_out, 21, HAL_MAX_DELAY);
@@ -387,7 +392,7 @@ documentation:
       }
       ```
 
-      ## Running a program
+      ### Running a program
 
       Once the program is loaded (using the above code or similar), we can run a program.
       This is as easy as providing a clock signal to the processor and setting the processor enable line high.
