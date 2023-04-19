@@ -74,13 +74,15 @@ module memory_bank #(
     integer idx;
     always @(*) begin
         data_out = {DATA_WIDTH{1'b0}};
-        for (idx = 0; idx < MEM_SIZE; idx = idx + 1) begin
-            if (address == idx) begin
-                data_out = mem_data_out[idx];
-            end
-        end
+        // for (idx = 0; idx < MEM_SIZE; idx = idx + 1) begin
+        //     if (address == idx) begin
+        //         data_out = mem_data_out[idx];
+        //     end
+        // end
         if (address == IO_ADDR) begin
             data_out = {led_data_out, btn_data_out}; // Place btn_data_out at the LSB
+        end else begin
+            data_out = mem_data_out[address];
         end
     end
 
