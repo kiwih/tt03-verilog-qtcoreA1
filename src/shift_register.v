@@ -19,7 +19,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
+`default_nettype none
 module shift_register #(
     parameter WIDTH = 8
 )(
@@ -39,7 +39,7 @@ module shift_register #(
     always @(posedge clk) begin
         if (rst) begin
             internal_data <= {WIDTH{1'b0}};
-        end else if (enable) begin
+        end else if (!scan_enable && enable) begin
             internal_data <= data_in;
         end else if (scan_enable) begin
             if(WIDTH > 1)
@@ -54,4 +54,3 @@ module shift_register #(
     assign scan_out = internal_data[WIDTH-1];
 
 endmodule
-

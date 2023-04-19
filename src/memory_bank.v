@@ -45,6 +45,19 @@ module memory_bank #(
     wire io_scan_out; // New wire to connect scan_out of led_shift_register to scan_in of btn_shift_register
     
     shift_register #(
+        .WIDTH(1)
+    ) btn_shift_register (
+        .clk(clk),
+        .rst(rst),
+        .enable(1'b1), // Enable the btn_shift_register, always read the status of the button input
+        .data_in(btn_in),
+        .data_out(btn_data_out),
+        .scan_enable(scan_enable),
+        .scan_in(mem_scan_out[MEM_SIZE-1]), // Connect the scan_in to the last memory cell scan_out
+        .scan_out(io_scan_out) // Connect the new wire to the scan_out
+    );
+
+    shift_register #(
         .WIDTH(7)
     ) led_shift_register (
         .clk(clk),
@@ -54,20 +67,7 @@ module memory_bank #(
         .data_out(led_data_out),
         .scan_enable(scan_enable),
         .scan_in(io_scan_out), // Connect the new wire to the scan_in
-        .scan_out(scan_out)
-    );
-
-    shift_register #(
-        .WIDTH(1)
-    ) btn_shift_register (
-        .clk(clk),
-        .rst(rst),
-        .enable(1'b1), // Enable the btn_shift_register, always read the status of the button input
-        .data_in(btn_in),
-        .data_out(btn_data_out),
-        .scan_enable(scan_enable),
-        .scan_in(mem_scan_out[MEM_SIZE-1]),
-        .scan_out(io_scan_out) // Connect the new wire to the scan_out
+        .scan_out(scan_out) // Connect the scan_out to the top-level module
     );
 
     // Read operation

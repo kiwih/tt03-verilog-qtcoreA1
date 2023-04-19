@@ -20,15 +20,20 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 `default_nettype none
-module qtcore_a1_4baddr_scan_test(
+
+
+
+module qtcore_a1_4baddr_scan_test #(
+    parameter SCAN_ONLY = 0
+    )(
 
     );
     
  localparam CLK_PERIOD = 10;
     localparam CLK_HPERIOD = CLK_PERIOD/2;
 
-    localparam MEM_SIZE = 18;
-    localparam SCAN_CHAIN_SIZE = 24 + (MEM_SIZE * 8);
+    localparam FULL_MEM_SIZE = 18; //includes the IO register
+    localparam SCAN_CHAIN_SIZE = 24 + (FULL_MEM_SIZE * 8);
     wire [7:0] io_in;
     wire [7:0] io_out;
 
@@ -63,8 +68,52 @@ module qtcore_a1_4baddr_scan_test(
     integer i;
     integer fid;
 
+    task xchg_scan_chain;
+    begin
+        scan_enable_in = 1; //asert low chip select
+        for (i = 0; i < SCAN_CHAIN_SIZE; i = i + 1) begin
+            scan_in = scan_chain[SCAN_CHAIN_SIZE-1];
+            #(CLK_PERIOD / 2);
+            clk_in = 1;
+            spi_miso_cap = scan_out;
+            #(CLK_PERIOD / 2);
+            clk_in = 0;
+            scan_chain = {scan_chain[SCAN_CHAIN_SIZE-2:0], spi_miso_cap};
+        end
+        #(CLK_PERIOD);
+        scan_enable_in = 0;
+    end
+    endtask
+
+    task reset_processor;
+    begin
+        rst_in = 1;
+        #(CLK_PERIOD);
+        rst_in = 0;
+        #(CLK_PERIOD);
+    end
+    endtask
+
+    task run_processor_until_halt(
+        input integer max_cycles,
+        output integer n_cycles
+    );
+    begin
+        proc_en_in = 1;
+        for (n_cycles = 0; n_cycles < max_cycles && (n_cycles < 2 || scan_out == 0) ; n_cycles = n_cycles + 1) begin //two cycles per instruction, this should execute 4 instr
+            #(CLK_PERIOD / 2);
+            clk_in = 1;
+            #(CLK_PERIOD / 2);
+            clk_in = 0;
+        end
+        proc_en_in = 0;
+    end
+    endtask
+
     initial begin
         scan_chain = 'b0;
+        $display("SCAN ONLY = %d", SCAN_ONLY);
+        $display("TEST 1");
 
         // TEST PART 1: LOAD SCAN CHAIN
 
@@ -72,110 +121,86 @@ module qtcore_a1_4baddr_scan_test(
         scan_chain[7:3] = 5'h1;    //PC = 1
         scan_chain[15:8] = 8'he0; //IR = ADDI 0 (NOP), should get overrwritten by MEM[2]
         scan_chain[23:16] = 8'h01; //ACC = 0x01
-        scan_chain[31:24] = 8'he0; //MEM[0] = 0xE0
-        scan_chain[39:32] = 8'he1; //MEM[1] = 0xE1 (ADDI 1)
-        scan_chain[47:40] = 8'he2; //MEM[2] = 0xE2 (ADDI 2)
-        scan_chain[55:48] = 8'he3; //MEM[3] = 0xE3 (ADDI 3)
-        scan_chain[63:56] = 8'he4; //MEM[4] = 0xE4 (ADDI 4)
+        scan_chain[31 -: 8] = 8'he0; //MEM[0] = 0xE0
+        scan_chain[39 -: 8] = 8'he1; //MEM[1] = 0xE1 (ADDI 1)
+        scan_chain[47 -: 8] = 8'he2; //MEM[2] = 0xE2 (ADDI 2)
+        scan_chain[55 -: 8] = 8'he3; //MEM[3] = 0xE3 (ADDI 3)
+        scan_chain[63 -: 8] = 8'he4; //MEM[4] = 0xE4 (ADDI 4)
 
-        scan_chain[SCAN_CHAIN_SIZE-1 -: 8] = 8'hF0;
+        scan_chain[SCAN_CHAIN_SIZE-1 -: 8] = 8'hF0; //write to the IO register
         
         scan_enable_in = 0;
         proc_en_in = 0;
         scan_in = 0;
+        clk_in = 0;
+        rst_in = 0;
+        btn_in = 0;
         
         //TEST 1: reset the processor
-        rst_in = 1;
-        #CLK_PERIOD;
-        rst_in = 0;
-        #CLK_PERIOD;
+        reset_processor;
         
+        xchg_scan_chain;
         
-        scan_enable_in = 1; //asert low chip select
-        for (i = 0; i < SCAN_CHAIN_SIZE; i = i + 1) begin
-            scan_in = scan_chain[SCAN_CHAIN_SIZE-1];
-            #(CLK_PERIOD / 2);
-            clk_in = 1;
-            spi_miso_cap = scan_out;
-            #(CLK_PERIOD / 2);
-            clk_in = 0;
-            scan_chain = {scan_chain[SCAN_CHAIN_SIZE-2:0], spi_miso_cap};
-        end
-        #(CLK_PERIOD);
-        scan_enable_in = 0;
+        if(SCAN_ONLY == 0) begin
+            if(dut.qtcore.cu_inst.state_register.internal_data !== 3'b001) begin
+                $display("Wrong state reg value");
+                $finish;
+            end
+            if(dut.qtcore.PC_inst.internal_data !== 5'h1) begin
+                $display("Wrong PC reg value");
+                $finish;
+            end
+            if(dut.qtcore.IR_inst.internal_data !== 8'he0) begin
+                $display("Wrong IR reg value");
+                $finish;
+            end
+            if(dut.qtcore.ACC_inst.internal_data !== 8'h01) begin
+                $display("Wrong ACC reg value");
+                $finish;
+            end
+            if(dut.qtcore.memory_inst.memory[0].mem_cell.internal_data !== 8'he0) begin
+                $display("Wrong mem[0] reg value");
+                $finish;
+            end
+            if(dut.qtcore.memory_inst.memory[1].mem_cell.internal_data !== 8'he1) begin
+                $display("Wrong mem[1] reg value");
+                $finish;
+            end
+            if(dut.qtcore.memory_inst.memory[2].mem_cell.internal_data !== 8'he2) begin
+                $display("Wrong mem[2] reg value");
+                $finish;
+            end
+            if(dut.qtcore.memory_inst.memory[3].mem_cell.internal_data !== 8'he3) begin
+                $display("Wrong mem[3] reg value");
+                $finish;
+            end
+            if(led_out !== 7'b1111000) begin
+                $display("Wrong LED data out, got %b", led_out);
+                $finish;
+            end
         
-        if(dut.qtcore.cu_inst.state_register.internal_data != 3'b001) begin
-            $display("Wrong state reg value");
-            $finish;
+            $display("Scan load successful");
         end
-        if(dut.qtcore.PC_inst.internal_data != 5'h1) begin
-            $display("Wrong PC reg value");
-            $finish;
-        end
-        if(dut.qtcore.IR_inst.internal_data != 8'he0) begin
-            $display("Wrong IR reg value");
-            $finish;
-        end
-        if(dut.qtcore.ACC_inst.internal_data != 8'h01) begin
-            $display("Wrong ACC reg value");
-            $finish;
-        end
-        if(dut.qtcore.memory_inst.memory[0].mem_cell.internal_data != 8'he0) begin
-            $display("Wrong mem[0] reg value");
-            $finish;
-        end
-        if(dut.qtcore.memory_inst.memory[1].mem_cell.internal_data != 8'he1) begin
-            $display("Wrong mem[1] reg value");
-            $finish;
-        end
-        if(dut.qtcore.memory_inst.memory[2].mem_cell.internal_data != 8'he2) begin
-            $display("Wrong mem[2] reg value");
-            $finish;
-        end
-        if(dut.qtcore.memory_inst.memory[3].mem_cell.internal_data != 8'he3) begin
-            $display("Wrong mem[3] reg value");
-            $finish;
-        end
-        if(led_out != 7'b1111000) begin
-            $display("Wrong LED data out, got %b", led_out);
-            $finish;
-        end
-        
-        $display("Scan load successful");
         
         //TEST PART 2: RUN PROCESSOR
         
-        proc_en_in = 1;
-        for (i = 0; i < 8; i = i + 1) begin //two cycles per instruction, this should execute 4 instr
-            #(CLK_PERIOD / 2);
-            clk_in = 1;
-            #(CLK_PERIOD / 2);
-            clk_in = 0;
-        end
-        proc_en_in = 0;
-        if(dut.qtcore.ACC_inst.internal_data != 8'hb) begin
-            $display("Wrong ACC reg value %d", dut.qtcore.ACC_inst.internal_data);
-           
-            $finish;
-        end
+        run_processor_until_halt(8, i); //two cycles per instruction, this should execute 4 instr
+
+        if(SCAN_ONLY == 0) begin
+            $display("ACC is: %b", dut.qtcore.ACC_inst.internal_data);
+            if(dut.qtcore.ACC_inst.internal_data !== 8'hb) begin
+                $display("Wrong ACC reg value %d", dut.qtcore.ACC_inst.internal_data);
+               
+                $finish;
+            end
         
-        $display("Instruction operation successful");
+            $display("Instruction operation successful");
+        end
         scan_chain = 'b0;
 
         //TEST PART 3: UNLOAD SCAN CHAIN 
         
-        scan_enable_in = 1; //asert low chip select
-        for (i = 0; i < SCAN_CHAIN_SIZE; i = i + 1) begin
-            scan_in = scan_chain[SCAN_CHAIN_SIZE-1];
-            #(CLK_PERIOD / 2);
-            clk_in = 1;
-            spi_miso_cap = scan_out;
-            #(CLK_PERIOD / 2);
-            clk_in = 0;
-            scan_chain = {scan_chain[SCAN_CHAIN_SIZE-2:0], spi_miso_cap};
-        end
-        #(CLK_PERIOD);
-        scan_enable_in = 0;
+        xchg_scan_chain;
         
         if(scan_chain[2:0] != 3'b001) begin
             $display("Wrong unloaded state reg");
@@ -193,28 +218,85 @@ module qtcore_a1_4baddr_scan_test(
             $display("Wrong unloaded ACC");
             $finish;
         end
-        if(scan_chain[31:24] != 8'he0) begin
+        if(scan_chain[31 -: 8] != 8'he0) begin
             $display("Wrong unloaded MEM[0]");
             $finish;
         end
-        if(scan_chain[39:32] != 8'he1) begin
+        if(scan_chain[31+8*1 -: 8] != 8'he1) begin
             $display("Wrong unloaded MEM[1]");
             $finish;
         end
-        if(scan_chain[47:40] != 8'he2) begin
+        if(scan_chain[31+8*2 -: 8] != 8'he2) begin
             $display("Wrong unloaded MEM[2]");
             $finish;
         end
-        if(scan_chain[55:48] != 8'he3) begin
+        if(scan_chain[31+8*3 -: 8] != 8'he3) begin
             $display("Wrong unloaded MEM[3]");
             $finish;
         end
-        if(scan_chain[63:56] != 8'he4) begin
+        if(scan_chain[31+8*4 -: 8] != 8'he4) begin
             $display("Wrong unloaded MEM[4]");
             $finish;
         end
         
         $display("Unload scan chain successful");
+
+        $display("TEST 2");
+
+        scan_chain = 'b0;
+        scan_chain[2:0] = 3'b001;  //state = fetch
+        scan_chain[7:3] = 5'h0;    //PC = 0
+        scan_chain[15:8] = 8'h00; //IR = 0
+        scan_chain[23:16] = 8'h00; //ACC = 0x00
+        scan_chain[31 -: 8] = 8'b00001111;
+        scan_chain[39 -: 8] = 8'b11110010;
+        scan_chain[47 -: 8] = 8'b11111100;
+        scan_chain[55 -: 8] = 8'b00101111;
+        scan_chain[63 -: 8] = 8'b11110101;
+        scan_chain[71 -: 8] = 8'b11101111;
+        scan_chain[79 -: 8] = 8'b11111000;
+        scan_chain[87 -: 8] = 8'b11101111;
+        scan_chain[95 -: 8] = 8'b11100001;
+        scan_chain[103 -: 8] = 8'b00110000;
+        scan_chain[111 -: 8] = 8'b11110011;
+        scan_chain[119 -: 8] = 8'b11111111;
+        scan_chain[127 -: 8] = 8'b00000000;
+        scan_chain[135 -: 8] = 8'b00000000;
+        scan_chain[143 -: 8] = 8'b00000000;
+        scan_chain[151 -: 8] = 8'b00010000;
+        scan_chain[159 -: 8] = 8'b00000000;
+
+        //RESET PROCESSOR
+        scan_enable_in = 0;
+        proc_en_in = 0;
+        scan_in = 0;
+        
+        reset_processor;
+        
+        xchg_scan_chain;
+
+        //RUN PROCESSOR UNTIL HALT
+        run_processor_until_halt(256, i);
+
+        if(scan_out != 1) begin
+            $display("Program failed to halt");
+            $finish;
+        end
+        $display("Program halted after %d clock cycles", i);
+        
+        //SCAN OUT
+        xchg_scan_chain;
+
+        if(scan_chain[31+8*15 -: 8] !== 8'h0) begin
+            $display("MEM[15] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*16 -: 8] !== 8'h1) begin
+            $display("MEM[16] wrong value %d", scan_chain[24+16*8 -: 8]);
+            $finish;
+        end
+        $display("Memory values correct after scanout");
+
         
         fid = $fopen("TEST_PASSES.txt", "w");
         $fwrite(fid, "TEST_PASSES");

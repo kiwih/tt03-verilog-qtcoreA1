@@ -37,7 +37,7 @@ VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_f
 VERILOG_SOURCES += $(PWD)/qtcore_a1_4baddr_scan_test.v $(PWD)/gate_level_netlist.v
 
 test:
-	iverilog -s $(TOPLEVEL) $(VERILOG_SOURCES)
+	iverilog -P$(TOPLEVEL).SCAN_ONLY=1 -s $(TOPLEVEL) $(VERILOG_SOURCES)
 	
 endif
 

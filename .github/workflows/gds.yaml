@@ -138,16 +138,16 @@ jobs:
         cocotb-config --libpython
         cocotb-config --python-bin
 
-    # - name: test
-    #   run: |
-    #     pwd
-    #     rm runs/wokwi/results/final/verilog/gl/*.nl.v 
-    #     cp runs/wokwi/results/final/verilog/gl/*.v src/gate_level_netlist.v
-    #     cd src
-    #     make clean
-    #     GATES=yes make
-    #     # make will return success even if the test fails, so check for failure in the results.xml
-    #     grep TEST_PASSES TEST_PASSES.txt
+    - name: test
+      run: |
+        pwd
+        rm runs/wokwi/results/final/verilog/gl/*.nl.v 
+        cp runs/wokwi/results/final/verilog/gl/*.v src/gate_level_netlist.v
+        cd src
+        make clean
+        # GATES=yes make
+        # make will return success even if the test fails, so check for failure in the results.xml
+        # grep TEST_PASSES TEST_PASSES.txt
 
     # - name: upload vcd
     #   if: success() || failure()
@@ -155,6 +155,12 @@ jobs:
     #   with:
     #       name: gatelevel-test-vcd
     #       path: src/tb.vcd
+
+    - name: upload gate_level_netlist
+      uses: actions/upload-artifact@v3
+      with:
+          name: gate_level_netlist
+          path: src/gate_level_netlist.v
 
 ##############################################################
 # Generate files for the 3D viewer
