@@ -210,39 +210,39 @@ module qtcore_a1_4baddr_scan_test (
         
         xchg_scan_chain;
         
-        if(scan_chain[2:0] != 3'b001) begin
+        if(scan_chain[2:0] !== 3'b001) begin
             $display("Wrong unloaded state reg");
             $finish;
         end
-        if(scan_chain[7:3] != 5'h5) begin
+        if(scan_chain[7:3] !== 5'h5) begin
             $display("Wrong unloaded PC");
             $finish;
         end
-        if(scan_chain[15:8] != 8'he4) begin
+        if(scan_chain[15:8] !== 8'he4) begin
             $display("Wrong unloaded IR");
             $finish;
         end
-        if(scan_chain[23:16] != 8'hb) begin
+        if(scan_chain[23:16] !== 8'hb) begin
             $display("Wrong unloaded ACC");
             $finish;
         end
-        if(scan_chain[31 -: 8] != 8'he0) begin
+        if(scan_chain[31 -: 8] !== 8'he0) begin
             $display("Wrong unloaded MEM[0]");
             $finish;
         end
-        if(scan_chain[31+8*1 -: 8] != 8'he1) begin
+        if(scan_chain[31+8*1 -: 8] !== 8'he1) begin
             $display("Wrong unloaded MEM[1]");
             $finish;
         end
-        if(scan_chain[31+8*2 -: 8] != 8'he2) begin
+        if(scan_chain[31+8*2 -: 8] !== 8'he2) begin
             $display("Wrong unloaded MEM[2]");
             $finish;
         end
-        if(scan_chain[31+8*3 -: 8] != 8'he3) begin
+        if(scan_chain[31+8*3 -: 8] !== 8'he3) begin
             $display("Wrong unloaded MEM[3]");
             $finish;
         end
-        if(scan_chain[31+8*4 -: 8] != 8'he4) begin
+        if(scan_chain[31+8*4 -: 8] !== 8'he4) begin
             $display("Wrong unloaded MEM[4]");
             $finish;
         end
@@ -275,25 +275,20 @@ module qtcore_a1_4baddr_scan_test (
         scan_chain[151 -: 8] = 8'b00010000;
         scan_chain[159 -: 8] = 8'b00000000;
 
-
         //RESET PROCESSOR
         scan_enable_in = 0;
         proc_en_in = 0;
         scan_in = 0;
-        
         reset_processor;
-        
+        //SCAN
         xchg_scan_chain;
-
         //RUN PROCESSOR UNTIL HALT
         run_processor_until_halt(256, i);
-
         if(scan_out != 1) begin
             $display("Program failed to halt");
             $finish;
         end
         $display("Program halted after %d clock cycles", i);
-        
         //SCAN OUT
         xchg_scan_chain;
 
@@ -307,6 +302,144 @@ module qtcore_a1_4baddr_scan_test (
         end
         $display("Memory values correct after scanout");
 
+        $display("TEST 3");
+
+        scan_chain[2:0] = 3'b001;  //state = fetch
+        scan_chain[7:3] = 5'h0;    //PC = 0
+        scan_chain[15:8] = 8'h00; //IR = 0
+        scan_chain[23:16] = 8'h00; //ACC = 0x00
+        scan_chain[31 -: 8] = 8'b00010000;
+        scan_chain[39 -: 8] = 8'b11100001;
+        scan_chain[47 -: 8] = 8'b00100000;
+        scan_chain[55 -: 8] = 8'b01010000;
+        scan_chain[63 -: 8] = 8'b00100001;
+        scan_chain[71 -: 8] = 8'b01110000;
+        scan_chain[79 -: 8] = 8'b00100010;
+        scan_chain[87 -: 8] = 8'b10001111;
+        scan_chain[95 -: 8] = 8'b00100011;
+        scan_chain[103 -: 8] = 8'b10101110;
+        scan_chain[111 -: 8] = 8'b00100100;
+        scan_chain[119 -: 8] = 8'b11001101;
+        scan_chain[127 -: 8] = 8'b00100101;
+        scan_chain[135 -: 8] = 8'b11111111;
+        scan_chain[143 -: 8] = 8'b00000100;
+        scan_chain[151 -: 8] = 8'b00001111;
+        scan_chain[159 -: 8] = 8'b00001010;
+
+        //RESET PROCESSOR
+        scan_enable_in = 0;
+        proc_en_in = 0;
+        scan_in = 0;
+        reset_processor;
+        //SCAN
+        xchg_scan_chain;
+        //RUN PROCESSOR UNTIL HALT
+        run_processor_until_halt(256, i);
+        if(scan_out != 1) begin
+            $display("Program failed to halt");
+            $finish;
+        end
+        $display("Program halted after %d clock cycles", i);
+        //SCAN OUT
+        xchg_scan_chain;
+
+        if(scan_chain[31+8*0 -: 8] !== 11) begin
+            $display("MEM[0] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*1 -: 8] !== 21) begin
+            $display("MEM[1] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*2 -: 8] !== 11) begin
+            $display("MEM[2] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*3 -: 8] !== 11) begin
+            $display("MEM[3] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*4 -: 8] !== 15) begin
+            $display("MEM[4] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*5 -: 8] !== 8'hf0) begin
+            $display("MEM[5] wrong value");
+            $finish;
+        end
+        $display("Memory values correct after scanout");
+
+        $display("TEST 4");
+
+        scan_chain[2:0] = 3'b001;  //state = fetch
+        scan_chain[7:3] = 5'h0;    //PC = 0
+        scan_chain[15:8] = 8'h00; //IR = 0
+        scan_chain[23:16] = 8'h00; //ACC = 0x00
+        scan_chain[31 -: 8] = 8'b00010000;
+        scan_chain[39 -: 8] = 8'b11110110;
+        scan_chain[47 -: 8] = 8'b00100000;
+        scan_chain[55 -: 8] = 8'b11110111;
+        scan_chain[63 -: 8] = 8'b00100001;
+        scan_chain[71 -: 8] = 8'b11111000;
+        scan_chain[79 -: 8] = 8'b00100010;
+        scan_chain[87 -: 8] = 8'b11111001;
+        scan_chain[95 -: 8] = 8'b00100011;
+        scan_chain[103 -: 8] = 8'b11111010;
+        scan_chain[111 -: 8] = 8'b00100100;
+        scan_chain[119 -: 8] = 8'b11111100;
+        scan_chain[127 -: 8] = 8'b00100101;
+        scan_chain[135 -: 8] = 8'b11111101;
+        scan_chain[143 -: 8] = 8'b11111110;
+        scan_chain[151 -: 8] = 8'b00100110;
+        scan_chain[159 -: 8] = 8'b00001010;
+
+
+        //RESET PROCESSOR
+        scan_enable_in = 0;
+        proc_en_in = 0;
+        scan_in = 0;
+        reset_processor;
+        //SCAN
+        xchg_scan_chain;
+        //RUN PROCESSOR UNTIL HALT
+        run_processor_until_halt(256, i);
+        if(scan_out != 1) begin
+            $display("Program failed to halt");
+            $finish;
+        end
+        $display("Program halted after %d clock cycles", i);
+        //SCAN OUT
+        xchg_scan_chain;
+
+        if(scan_chain[31+8*0 -: 8] !== 20) begin
+            $display("MEM[0] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*1 -: 8] !== 10) begin
+            $display("MEM[1] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*2 -: 8] !== 160) begin
+            $display("MEM[2] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*3 -: 8] !== 65) begin
+            $display("MEM[3] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*4 -: 8] !== 160) begin
+            $display("MEM[4] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*5 -: 8] !== 159) begin
+            $display("MEM[5] wrong value");
+            $finish;
+        end
+        if(scan_chain[31+8*6 -: 8] !== 255) begin
+            $display("MEM[5] wrong value");
+            $finish;
+        end
+        $display("Memory values correct after scanout");
         
         fid = $fopen("TEST_PASSES.txt", "w");
         $fwrite(fid, "TEST_PASSES");

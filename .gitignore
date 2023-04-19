@@ -12,3 +12,7 @@ TEST_PASSES.txt
 *.bak
 *.bin
 assembler/*.v
+primitives.v
+sky130_fd_sc_hd.v
+*.pyc
+*.zip
