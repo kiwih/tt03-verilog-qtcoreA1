@@ -30,7 +30,7 @@ module qtcore_a1_4baddr_scan_test (
  localparam CLK_PERIOD = 50;
     localparam CLK_HPERIOD = CLK_PERIOD/2;
 
-    localparam FULL_MEM_SIZE = 18; //includes the IO register
+    localparam FULL_MEM_SIZE = 19; //includes the IO register
     localparam SCAN_CHAIN_SIZE = 24 + (FULL_MEM_SIZE * 8);
     wire [7:0] io_in;
     wire [7:0] io_out;
