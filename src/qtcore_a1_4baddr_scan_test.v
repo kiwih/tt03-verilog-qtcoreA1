@@ -30,7 +30,7 @@ module qtcore_a1_4baddr_scan_test (
  localparam CLK_PERIOD = 50;
     localparam CLK_HPERIOD = CLK_PERIOD/2;
 
-    localparam FULL_MEM_SIZE = 19; //includes the IO register
+    localparam FULL_MEM_SIZE = 18; //includes the IO register
     localparam SCAN_CHAIN_SIZE = 24 + (FULL_MEM_SIZE * 8);
     wire [7:0] io_in;
     wire [7:0] io_out;
@@ -440,6 +440,81 @@ module qtcore_a1_4baddr_scan_test (
             $finish;
         end
         $display("Memory values correct after scanout");
+
+        $display("TEST 5");
+
+        scan_chain[2:0] = 3'b001;  //state = fetch
+        scan_chain[7:3] = 5'h0;    //PC = 0
+        scan_chain[15:8] = 8'h00; //IR = 0
+        scan_chain[23:16] = 8'h00; //ACC = 0x00
+        scan_chain[31 -: 8] = 8'b00010001;
+        scan_chain[39 -: 8] = 8'b10010000;
+        scan_chain[47 -: 8] = 8'b11110101;
+        scan_chain[55 -: 8] = 8'b00010001;
+        scan_chain[63 -: 8] = 8'b10010000;
+        scan_chain[71 -: 8] = 8'b11110011;
+        scan_chain[79 -: 8] = 8'b00001110;
+        scan_chain[87 -: 8] = 8'b11010000;
+        scan_chain[95 -: 8] = 8'b00101110;
+        scan_chain[103 -: 8] = 8'b11101110;
+        scan_chain[111 -: 8] = 8'b11111011;
+        scan_chain[119 -: 8] = 8'b00110001;
+        scan_chain[127 -: 8] = 8'b11111101;
+        scan_chain[135 -: 8] = 8'b11110000;
+        scan_chain[143 -: 8] = 8'b00000000;
+        scan_chain[151 -: 8] = 8'b00011000;
+        scan_chain[159 -: 8] = 8'b00000001;
+
+
+        //RESET PROCESSOR
+        scan_enable_in = 0;
+        proc_en_in = 0;
+        scan_in = 0;
+        reset_processor;
+        //SCAN
+        xchg_scan_chain;
+        //RUN PROCESSOR FOR 32 cycles at a time (should not halt)
+        btn_in = 0;
+        run_processor_until_halt(32, i);
+        btn_in = 1;
+        run_processor_until_halt(32, i);
+        
+        if(led_out != 7'h0c) begin
+            $display("LEDs wrong value");
+            $finish;
+        end
+
+        btn_in = 0;
+        run_processor_until_halt(32, i);
+        btn_in = 1;
+        run_processor_until_halt(32, i);
+        
+        if(led_out != 7'h00) begin
+            $display("LEDs wrong value");
+            $finish;
+        end
+
+        btn_in = 0;
+        run_processor_until_halt(32, i);
+        btn_in = 1;
+        run_processor_until_halt(32, i);
+        
+        if(led_out != 7'h0c) begin
+            $display("LEDs wrong value");
+            $finish;
+        end
+
+        btn_in = 0;
+        run_processor_until_halt(32, i);
+        btn_in = 0;
+        run_processor_until_halt(32, i);
+        
+        if(led_out != 7'h0c) begin
+            $display("LEDs wrong value (should not have changed, btn=1 missing)");
+            $finish;
+        end
+        
+        $display("BTN/LED values correct");
         
         fid = $fopen("TEST_PASSES.txt", "w");
         $fwrite(fid, "TEST_PASSES");
