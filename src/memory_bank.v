@@ -97,9 +97,7 @@ module memory_bank #(
     assign led_out = led_data_out;
 
     wire [6:0] seg7_out;
-    seg7 #(
-        .WIDTH(4)
-    ) seg7_inst (
+    seg7 seg7_inst (
         .counter(address - (IO_ADDR + 3)),
         .segments(seg7_out)
     );
