@@ -82,34 +82,23 @@ module memory_bank #(
     always @(*) begin
         if (address < MEM_SIZE) begin
             data_out = mem_data_out[address];
-        end else if (address == IO_ADDR) begin
-            data_out = {led_data_out, btn_data_out}; // Place btn_data_out at the LSB
-        end else if (address == (IO_ADDR + 1)) begin
-            data_out = IO_ADDR + 2;
-        end else if (address == (IO_ADDR + 2)) begin
-            data_out = {7'b0111111, 1'b0};  //0
-        end else if (address == (IO_ADDR + 3)) begin
-            data_out = {7'b0000110, 1'b0};  //1
-        end else if (address == (IO_ADDR + 4)) begin
-            data_out = {7'b1011011, 1'b0};  //2
-        end else if (address == (IO_ADDR + 5)) begin
-            data_out = {7'b1001111, 1'b0};  //3
-        end else if (address == (IO_ADDR + 6)) begin
-            data_out = {7'b1100110, 1'b0};  //4
-        end else if (address == (IO_ADDR + 7)) begin
-            data_out = {7'b1101101, 1'b0};  //5
-        end else if (address == (IO_ADDR + 8)) begin
-            data_out = {7'b1111100, 1'b0};  //6
-        end else if (address == (IO_ADDR + 9)) begin
-            data_out = {7'b0000111, 1'b0};  //7
-        end else if (address == (IO_ADDR + 10)) begin
-            data_out = {7'b1111111, 1'b0};  //8
-        end else if (address == (IO_ADDR + 11)) begin
-            data_out = {7'b1100111, 1'b0};  //9
-        end else begin 
-            data_out = 8'b00000001; // Return "00000001" for all memory addresses outside the range
-        end
+        end else case (address)
+            IO_ADDR: data_out = {led_data_out, btn_data_out}; // Place btn_data_out at the LSB
+            IO_ADDR + 1: data_out = IO_ADDR + 2; // Return IO_ADDR + 2 for address IO_ADDR + 1
+            IO_ADDR + 2: data_out = {7'b0111111, 1'b0}; // 0
+            IO_ADDR + 3: data_out = {7'b0000110, 1'b0}; // 1
+            IO_ADDR + 4: data_out = {7'b1011011, 1'b0}; // 2
+            IO_ADDR + 5: data_out = {7'b1001111, 1'b0}; // 3
+            IO_ADDR + 6: data_out = {7'b1100110, 1'b0}; // 4
+            IO_ADDR + 7: data_out = {7'b1101101, 1'b0}; // 5
+            IO_ADDR + 8: data_out = {7'b1111100, 1'b0}; // 6
+            IO_ADDR + 9: data_out = {7'b0000111, 1'b0}; // 7
+            IO_ADDR + 10: data_out = {7'b1111111, 1'b0}; // 8
+            IO_ADDR + 11: data_out = {7'b1100111, 1'b0}; // 9
+            default: data_out = 8'b00000001; // Return "00000001" for all other memory addresses outside the range
+        endcase
     end
+
 
     // Assign LED output
     assign led_out = led_data_out;
