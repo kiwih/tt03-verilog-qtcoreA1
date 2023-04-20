@@ -426,7 +426,7 @@ module qtcore_a1_4baddr_scan_test (
         end
         $display("Memory values correct after scanout");
 
-        $display("TEST 5");
+        $display("TEST 5: BTN/LED");
 
         scan_chain[2:0] = 3'b001;  //state = fetch
         scan_chain[7:3] = 5'h0;    //PC = 0
@@ -500,6 +500,91 @@ module qtcore_a1_4baddr_scan_test (
         end
         
         $display("BTN/LED values correct");
+
+        $display("TEST 6: 7SEG");
+        scan_chain[2:0] = 3'b001;  //state = fetch
+        scan_chain[7:3] = 5'h0;    //PC = 0
+        scan_chain[15:8] = 8'h00; //IR = 0
+        scan_chain[23:16] = 8'h00; //ACC = 0x00
+        scan_chain[31 -: 8] = 8'b00010000;
+        scan_chain[39 -: 8] = 8'b01010010;
+        scan_chain[47 -: 8] = 8'b11111011;
+        scan_chain[55 -: 8] = 8'b00110001;
+        scan_chain[63 -: 8] = 8'b00010000;
+        scan_chain[71 -: 8] = 8'b11100001;
+        scan_chain[79 -: 8] = 8'b00110000;
+        scan_chain[87 -: 8] = 8'b11111101;
+        scan_chain[95 -: 8] = 8'b11110000;
+        scan_chain[103 -: 8] = 8'b00000000;
+        scan_chain[111 -: 8] = 8'b00000000;
+        scan_chain[119 -: 8] = 8'b00000000;
+        scan_chain[127 -: 8] = 8'b00000000;
+        scan_chain[135 -: 8] = 8'b00000000;
+        scan_chain[143 -: 8] = 8'b00000000;
+        scan_chain[151 -: 8] = 8'b00000000;
+        scan_chain[159 -: 8] = 8'b00000000;
+
+
+        //RESET PROCESSOR
+        scan_enable_in = 0;
+        proc_en_in = 0;
+        scan_in = 0;
+        reset_processor;
+        //SCAN
+        xchg_scan_chain;
+        //RUN PROCESSOR FOR 16 cycles at a time (should not halt)
+        run_processor_until_halt(18, i);
+        if(led_out != 7'b0111111) begin //first output value: "0"
+            $display("LEDs wrong value 0: %b", led_out);
+            $finish;
+        end
+        run_processor_until_halt(18, i);
+        if(led_out != 7'b0000110) begin //first output value: "1"
+            $display("LEDs wrong value 1");
+            $finish;
+        end
+        run_processor_until_halt(18, i);
+        if(led_out != 7'b1011011) begin //first output value: "2"
+            $display("LEDs wrong value 2");
+            $finish;
+        end
+        run_processor_until_halt(18, i);
+        if(led_out != 7'b1001111) begin //first output value: "3"
+            $display("LEDs wrong value 3 %b", led_out);
+            $finish;
+        end
+        run_processor_until_halt(18, i);
+        if(led_out != 7'b1100110) begin //first output value: "4"
+            $display("LEDs wrong value 4");
+            $finish;
+        end
+        run_processor_until_halt(18, i);
+        if(led_out != 7'b1101101) begin //first output value: "5"
+            $display("LEDs wrong value 5");
+            $finish;
+        end
+        run_processor_until_halt(18, i);
+        if(led_out != 7'b1111100) begin //first output value: "6"
+            $display("LEDs wrong value");
+            $finish;
+        end
+        run_processor_until_halt(18, i);
+        if(led_out != 7'b0000111) begin //first output value: "7"
+            $display("LEDs wrong value");
+            $finish;
+        end
+        run_processor_until_halt(18, i);
+        if(led_out != 7'b1111111) begin //first output value: "8"
+            $display("LEDs wrong value");
+            $finish;
+        end
+        run_processor_until_halt(18, i);
+        if(led_out != 7'b1100111) begin //first output value: "9"
+            $display("LEDs wrong value");
+            $finish;
+        end
+
+        $display("All segment counting correct");
         
         fid = $fopen("TEST_PASSES.txt", "w");
         $fwrite(fid, "TEST_PASSES");
