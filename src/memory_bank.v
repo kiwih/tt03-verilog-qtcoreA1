@@ -85,7 +85,7 @@ module memory_bank #(
         end else if (address == IO_ADDR) begin
             data_out = {led_data_out, btn_data_out}; // Place btn_data_out at the LSB
         end else begin
-            data_out = 8'b00000001; // Return "00000001" for all memory addresses outside the range
+            data_out = address - IO_ADDR; //8'b00000001; // Return "00000001" for all memory addresses outside the range
         end
     end
 
