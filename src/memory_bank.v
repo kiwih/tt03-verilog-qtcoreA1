@@ -102,10 +102,10 @@ module memory_bank #(
             data_out = {7'b1111100, 1'b0};  //6
         end else if (address == (IO_ADDR + 9)) begin
             data_out = {7'b0000111, 1'b0};  //7
-        end else if (address == (IO_ADDR + 10)) begin
-            data_out = {7'b1111111, 1'b0};  //8
-        end else if (address == (IO_ADDR + 11)) begin
-            data_out = {7'b1100111, 1'b0};  //9
+        // end else if (address == (IO_ADDR + 10)) begin
+        //     data_out = {7'b1111111, 1'b0};  //8
+        // end else if (address == (IO_ADDR + 11)) begin
+        //     data_out = {7'b1100111, 1'b0};  //9
         end else begin 
             data_out = 8'b00000001; // Return "00000001" for all memory addresses outside the range
         end
