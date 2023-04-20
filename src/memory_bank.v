@@ -88,7 +88,7 @@ module memory_bank #(
             data_out = 8'b00000001; ////data_out = address - IO_ADDR; //8'b00000001; // Return "00000001" for all memory addresses outside the range
         end else if (address == IO_ADDR + 2) begin
             data_out = IO_ADDR + 3;
-        end else if (address > IO_ADDR + 2 && address < IO_ADDR + 12) begin
+        end else if (address > (IO_ADDR + 2) && address <= (IO_ADDR + 12)) begin
             data_out = {seg7_out, 1'b0};
         end
     end
@@ -105,6 +105,18 @@ module memory_bank #(
     );
 
 endmodule
+
+/*
+      -- 1 --
+     |       |
+     6       2
+     |       |
+      -- 7 --
+     |       |
+     5       3
+     |       |
+      -- 4 --
+*/
 
 module seg7 (
     input wire [3:0] counter,
