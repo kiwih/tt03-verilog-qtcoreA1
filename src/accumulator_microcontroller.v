@@ -89,7 +89,7 @@ module accumulator_microcontroller #(
     wire [4:0] pc_minus_three = pc_data_out - 5'b11;
     // Declare additional wires for PC mux
     wire [4:0] pc_plus_two = pc_data_out + 5'b10;
-    
+
     // Instantiate PC multiplexer
     always @(*) begin
         case(cu_PC_mux_select)
@@ -97,7 +97,6 @@ module accumulator_microcontroller #(
             2'b01: pc_data_in = acc_data_out[4:0];
             2'b10: pc_data_in = pc_minus_three;
             default: pc_data_in = pc_plus_two;
-            //default: pc_data_in = 5'b0;
         endcase
     end
 
@@ -136,9 +135,9 @@ module accumulator_microcontroller #(
             2'b00: acc_data_in = alu_Y;
             2'b01: acc_data_in = memory_data_out;
             default: acc_data_in = {3'b000, pc_data_out};
-            //default: acc_data_in = 8'b0;
         endcase
     end
+
     
     // Instantiate Memory Bank
     memory_bank #(
@@ -168,9 +167,9 @@ module accumulator_microcontroller #(
             2'b00: memory_address = ir_data_out[4:0];
             2'b01: memory_address = acc_data_out[4:0];
             default: memory_address = pc_data_out;
-            //default: memory_address = 5'b0;
         endcase
     end
+
     
     // Instantiate Control Unit
     control_unit cu_inst (
