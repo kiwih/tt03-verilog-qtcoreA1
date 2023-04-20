@@ -282,6 +282,38 @@ documentation:
       * CLR: ACC <- 0
       * INV: ACC <- ~ACC
 
+      ### Processor Memory Map
+
+      | Address | Description |
+      |---------|-------------|
+      | 0-16    | 17 bytes of general purpose Instruction/Data memory |
+      | 17      | I/O: {OUT[7:1], IN[0]} |
+      | 18      | Constant value: 19 (See "7seg" note below) |
+      | 19      | Constant value: Bits for 7seg "0" |
+      | 20      | Constant value: Bits for 7seg "1" |
+      | 21      | Constant value: Bits for 7seg "2" |
+      | 22      | Constant value: Bits for 7seg "3" |
+      | 23      | Constant value: Bits for 7seg "4" |
+      | 24      | Constant value: Bits for 7seg "5" |
+      | 25      | Constant value: Bits for 7seg "6" |
+      | 26      | Constant value: Bits for 7seg "7" |
+      | 27      | Constant value: Bits for 7seg "8" |
+      | 28      | Constant value: Bits for 7seg "9" |
+      | 29-31   | Constant value: 1 |
+
+      ### 7seg
+
+      Tiny Tapeout 3 has a 7-segment display on the board. To make it useful with the QTCore-A1, 
+      the processor helpfully includes the bit patterns stored at addresses 19-28.
+      The easiest way to make use of these is with the LDAR instruction.
+      Here's an example snippet, which assumes a value between 0 and 9 is stored at address 16:
+
+      ```
+      0: LDA 16 ; load the value we want to display
+      1: ADD 18 ; add it to the constant 19 to get the 7 segment pattern offset
+      2: LDAR   ; load the 7 segment pattern
+      3: STA 17 ; emit the 7 segment pattern
+      ```
 
 # Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
   how_to_test:  |
