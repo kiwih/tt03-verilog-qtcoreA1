@@ -96,8 +96,8 @@ module accumulator_microcontroller #(
             2'b00: pc_data_in = pc_plus_one;
             2'b01: pc_data_in = acc_data_out[4:0];
             2'b10: pc_data_in = pc_minus_three;
-            2'b11: pc_data_in = pc_plus_two;
-            default: pc_data_in = 5'b0;
+            default: pc_data_in = pc_plus_two;
+            //default: pc_data_in = 5'b0;
         endcase
     end
 
@@ -135,8 +135,8 @@ module accumulator_microcontroller #(
         case(cu_ACC_mux_select)
             2'b00: acc_data_in = alu_Y;
             2'b01: acc_data_in = memory_data_out;
-            2'b10: acc_data_in = {3'b000, pc_data_out};
-            default: acc_data_in = 8'b0;
+            default: acc_data_in = {3'b000, pc_data_out};
+            //default: acc_data_in = 8'b0;
         endcase
     end
     
@@ -167,8 +167,8 @@ module accumulator_microcontroller #(
         case(cu_Memory_address_mux_select)
             2'b00: memory_address = ir_data_out[4:0];
             2'b01: memory_address = acc_data_out[4:0];
-            2'b10: memory_address = pc_data_out;
-            default: memory_address = 5'b0;
+            default: memory_address = pc_data_out;
+            //default: memory_address = 5'b0;
         endcase
     end
     
