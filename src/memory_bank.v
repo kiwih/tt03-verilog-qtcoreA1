@@ -84,59 +84,34 @@ module memory_bank #(
             data_out = mem_data_out[address];
         end else if (address == IO_ADDR) begin
             data_out = {led_data_out, btn_data_out}; // Place btn_data_out at the LSB
-        end else if (address == IO_ADDR + 1) begin 
-            data_out = 8'b00000001; ////data_out = address - IO_ADDR; //8'b00000001; // Return "00000001" for all memory addresses outside the range
-        end else if (address == IO_ADDR + 2) begin
-            data_out = IO_ADDR + 3;
-        end else if (address > (IO_ADDR + 2) && address <= (IO_ADDR + 12)) begin
-            data_out = {seg7_out, 1'b0};
+        end else if (address == (IO_ADDR + 1)) begin
+            data_out = IO_ADDR + 2;
+        end else if (address == (IO_ADDR + 2)) begin
+            data_out = {7'b0111111, 1'b0};  //0
+        end else if (address == (IO_ADDR + 3)) begin
+            data_out = {7'b0000110, 1'b0};  //1
+        end else if (address == (IO_ADDR + 4)) begin
+            data_out = {7'b1011011, 1'b0};  //2
+        end else if (address == (IO_ADDR + 5)) begin
+            data_out = {7'b1001111, 1'b0};  //3
+        end else if (address == (IO_ADDR + 6)) begin
+            data_out = {7'b1100110, 1'b0};  //4
+        end else if (address == (IO_ADDR + 7)) begin
+            data_out = {7'b1101101, 1'b0};  //5
+        end else if (address == (IO_ADDR + 8)) begin
+            data_out = {7'b1111100, 1'b0};  //6
+        end else if (address == (IO_ADDR + 9)) begin
+            data_out = {7'b0000111, 1'b0};  //7
+        end else if (address == (IO_ADDR + 10)) begin
+            data_out = {7'b1111111, 1'b0};  //8
+        end else if (address == (IO_ADDR + 11)) begin
+            data_out = {7'b1100111, 1'b0};  //9
+        end else begin 
+            data_out = 8'b00000001; // Return "00000001" for all memory addresses outside the range
         end
     end
 
     // Assign LED output
     assign led_out = led_data_out;
-
-    wire [6:0] seg7_out;
-    seg7 seg7_inst (
-        .counter(address - (IO_ADDR + 3)),
-        .segments(seg7_out)
-    );
-
-endmodule
-
-/*
-      -- 1 --
-     |       |
-     6       2
-     |       |
-      -- 7 --
-     |       |
-     5       3
-     |       |
-      -- 4 --
-*/
-
-module seg7 (
-    input wire [3:0] counter,
-    output reg [6:0] segments
-);
-
-    always @(*) begin
-        case(counter)
-            //                7654321
-            0:  segments = 7'b0111111;
-            1:  segments = 7'b0000110;
-            2:  segments = 7'b1011011;
-            3:  segments = 7'b1001111;
-            4:  segments = 7'b1100110;
-            5:  segments = 7'b1101101;
-            6:  segments = 7'b1111100;
-            7:  segments = 7'b0000111;
-            8:  segments = 7'b1111111;
-            9:  segments = 7'b1100111;
-            default:    
-                segments = 7'b0000000;
-        endcase
-    end
 
 endmodule
