@@ -14,7 +14,7 @@ Although primarily designed for Tiny Tapeout 3, it is parameterized and may be s
 Probably the most interesting thing about this design is that all functional Verilog beyond the Tiny Tapeout wrapper was written by GPT-4, i.e. not a human! 
 The author (Hammond Pearce) developed with GPT-4 first the ISA, then the processor, fully conversationally. Hammond wrote the test-benches to validate the design, and then had the
 appropriate back-and-forth with GPT-4 to have it fix all bugs.
-For your interest, we will provide all conversation logs in the project repository.
+For your interest, we provide all conversation logs in the project repository under the `/chats` directory.
 
 The architecture defines a processor with the following components:
 
