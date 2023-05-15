@@ -22,9 +22,9 @@ The architecture defines a processor with the following components:
 * Program Counter: 5-bit register containing the current address of the program
 * Instruction Register: 8-bit register containing the current instruction to execute
 * Accumulator: 8-bit register used for data storage, manipulation, and logic
-* Memory Bank: 17 8-bit registers which store instructions and data. The 17th register is used for I/O.
+* Memory Bank: 17 8-bit registers which store instructions and data. The 17th register is used for I/O (seven outputs, one input).
 
-In order to interact with the processor, all registers are connected via one large scan chain.
+In order to program and debug the processor, all registers are connected via one large scan chain.
 As such, you can use an external microcontroller's SPI peripheral to read and write the status of the processor.
 We use the SPI clock SPI_SCK as the clock to drive both the QTCore-A1 and the scan chain.
 You choose which you are using by asserting the appropriate chip select.
@@ -35,111 +35,111 @@ For your convenience, we also provide an assembler in Python (also written by GP
 
 ### Immediate Data Manipulation Instructions
 - ADDI: Add 4-bit Immediate to Accumulator
-- Opcode (4 bits): 1110
-- Immediate (4 bits): 4-bit Immediate
-- Register Effects: ACC <- ACC + IMM
+  - Opcode (4 bits): 1110
+  - Immediate (4 bits): 4-bit Immediate
+  - Register Effects: ACC <- ACC + IMM
 
 ### Instructions with Variable-Data Operands
 - LDA: Load Accumulator with memory contents
-- Opcode (3 bits): 000
-- Operand (5 bits): Memory Address
-- Register Effects: ACC <- M[Address]
+  - Opcode (3 bits): 000
+  - Operand (5 bits): Memory Address
+  - Register Effects: ACC <- M[Address]
 
 - STA: Store Accumulator to memory
-- Opcode (3 bits): 001
-- Operand (5 bits): Memory Address
-- Register Effects: M[Address] <- ACC
+  - Opcode (3 bits): 001
+  - Operand (5 bits): Memory Address
+  - Register Effects: M[Address] <- ACC
 
 - ADD: Add memory contents to Accumulator
-- Opcode (3 bits): 010
-- Operand (5 bits): Memory Address
-- Register Effects: ACC <- ACC + M[Address]
+  - Opcode (3 bits): 010
+  - Operand (5 bits): Memory Address
+  - Register Effects: ACC <- ACC + M[Address]
 
 - SUB: Subtract memory contents from Accumulator
-- Opcode (3 bits): 011
-- Operand (5 bits): Memory Address
-- Register Effects: ACC <- ACC - M[Address]
+  - Opcode (3 bits): 011
+  - Operand (5 bits): Memory Address
+  - Register Effects: ACC <- ACC - M[Address]
 
 - AND: AND memory contents with Accumulator
-- Opcode (3 bits): 100
-- Operand (5 bits): Memory Address
-- Register Effects: ACC <- ACC & M[Address]
+  - Opcode (3 bits): 100
+  - Operand (5 bits): Memory Address
+  - Register Effects: ACC <- ACC & M[Address]
 
 - OR: OR memory contents with Accumulator
-- Opcode (3 bits): 101
-- Operand (5 bits): Memory Address
-- Register Effects: ACC <- ACC | M[Address]
+  - Opcode (3 bits): 101
+  - Operand (5 bits): Memory Address
+  - Register Effects: ACC <- ACC | M[Address]
 
 - XOR: XOR memory contents with Accumulator
-- Opcode (3 bits): 110
-- Operand (5 bits): Memory Address
-- Register Effects: ACC <- ACC ^ M[Address]
+  - Opcode (3 bits): 110
+  - Operand (5 bits): Memory Address
+  - Register Effects: ACC <- ACC ^ M[Address]
 
 ### Control and Branching Instructions
 - JMP: Jump to memory address
-- Opcode (8 bits): 11110000
-- PC Behavior: PC <- ACC (Load the PC with the address stored in the accumulator)
+  - Opcode (8 bits): 11110000
+  - PC Behavior: PC <- ACC (Load the PC with the address stored in the accumulator)
 
 - JSR: Jump to Subroutine (save address to ACC)
-- Opcode (8 bits): 11110001
-- PC Behavior: ACC <- PC + 1, PC <- ACC (Save the next address in ACC, then jump to the address in ACC)
+  - Opcode (8 bits): 11110001
+  - PC Behavior: ACC <- PC + 1, PC <- ACC (Save the next address in ACC, then jump to the address in ACC)
 
 - BEQ_FWD: Branch if equal, forward (branch if ACC == 0)
-- Opcode (8 bits): 11110010
-- PC Behavior: If ACC == 0, then PC <- PC + 3 (Jump 2 instructions forward if ACC is zero)
+  - Opcode (8 bits): 11110010  
+  - PC Behavior: If ACC == 0, then PC <- PC + 3 (Jump 2 instructions forward if ACC is zero)
 
 - BEQ_BWD: Branch if equal, backward (branch if ACC == 0)
-- Opcode (8 bits): 11110011
-- PC Behavior: If ACC == 0, then PC <- PC - 2 (Jump 1 instruction backward if ACC is zero)
+  - Opcode (8 bits): 11110011
+  - PC Behavior: If ACC == 0, then PC <- PC - 2 (Jump 1 instruction backward if ACC is zero)
 
 - BNE_FWD: Branch if not equal, forward (branch if ACC != 0)
-- Opcode (8 bits): 11110100
-- PC Behavior: If ACC != 0, then PC <- PC + 3 (Jump 2 instructions forward if ACC is non-zero)
+  - Opcode (8 bits): 11110100
+  - PC Behavior: If ACC != 0, then PC <- PC + 3 (Jump 2 instructions forward if ACC is non-zero)
 
 - BNE_BWD: Branch if not equal, backward (branch if ACC != 0)
-- Opcode (8 bits): 11110101
-- PC Behavior: If ACC != 0, then PC <- PC - 2 (Jump 1 instruction backward if ACC is non-zero)
+  - Opcode (8 bits): 11110101
+  - PC Behavior: If ACC != 0, then PC <- PC - 2 (Jump 1 instruction backward if ACC is non-zero)
 
 - HLT: Halt the processor until reset
-- Opcode (8 bits): 11111111
-- PC Behavior: Stop execution (PC does not change until a reset occurs)
+  - Opcode (8 bits): 11111111
+  - PC Behavior: Stop execution (PC does not change until a reset occurs)
 
 ### Data Manipulation Instructions
 - SHL: Shift Accumulator left
-- Opcode (8 bits): 11110110
-- Register Effects: ACC <- ACC << 1
+  - Opcode (8 bits): 11110110
+  - Register Effects: ACC <- ACC << 1
 
 - SHR: Shift Accumulator right
-- Opcode (8 bits): 11110111
-- Register Effects: ACC <- ACC >> 1
+  - Opcode (8 bits): 11110111
+  - Register Effects: ACC <- ACC >> 1
 
 - SHL4: Shift Accumulator left by 4 bits
-- Opcode (8 bits): 11111000
-- Register Effects: ACC <- ACC << 4
+  - Opcode (8 bits): 11111000
+  - Register Effects: ACC <- ACC << 4
 
 - ROL: Rotate Accumulator left
-- Opcode (8 bits): 11111001
-- Register Effects: ACC <- (ACC << 1) OR (ACC >> 7)
+  - Opcode (8 bits): 11111001
+  - Register Effects: ACC <- (ACC << 1) OR (ACC >> 7)
 
 - ROR: Rotate Accumulator right
-- Opcode (8 bits): 11111010
-- Register Effects: ACC <- (ACC >> 1) OR (ACC << 7)
+  - Opcode (8 bits): 11111010
+  - Register Effects: ACC <- (ACC >> 1) OR (ACC << 7)
 
 - LDAR: Load Accumulator via indirect memory access (ACC as ptr)
-- Opcode (8 bits): 11111011
-- Register Effects: ACC <- M[ACC]
+  - Opcode (8 bits): 11111011
+  - Register Effects: ACC <- M[ACC]
 
 - DEC: Decrement Accumulator
-- Opcode (8 bits): 11111100
-- Register Effects: ACC <- ACC - 1
+  - Opcode (8 bits): 11111100
+  - Register Effects: ACC <- ACC - 1
 
 - CLR: Clear (Zero) Accumulator
-- Opcode (8 bits): 11111101
-- Register Effects: ACC <- 0
+  - Opcode (8 bits): 11111101
+  - Register Effects: ACC <- 0
 
 - INV: Invert (NOT) Accumulator
-- Opcode (8 bits): 11111110
-- Register Effects: ACC <- ~ACC
+  - Opcode (8 bits): 11111110
+  - Register Effects: ACC <- ~ACC
 
 ### Example programming using the assembler
 
