@@ -17,9 +17,8 @@ Finally, the conversations do not specifically result in files. Instead, they pr
 1. Scan all markdown files in this directory that start with two digits and a dash, and end with `.md`
 2. Conversations have titles. Examples:
  - `# 00 SPECIFICATION`
- - `# 10 SPEC BRANCH UPDATE (return to conversation)` 
- so, we can match them with the following regex:
- - `# [0-9]{2} - [A-Z\- ]+ (?:\([a-z ]+\))?`
+ - `# 10 SPEC BRANCH UPDATE (return to conversation 00)` 
+ so, we can match them with regex.
 3. Inside each conversation, messages from the User begin with `## USER` and messages from the AI begin with `## ASSISTANT`. There is also an optional tag after the `## USER` tag, `(restarts:[0-9]+)` which indicates how many times the conversation was restarted at that point. To calculate the number of messages, add up all `## USER` and `## ASSISTANT` tags, and then add the number of restarts twice (once for the user, once for the assistant - prior assistant messages are not included but were generated).
 
 A python script is included to calculate the metadata information and present it in a table.
