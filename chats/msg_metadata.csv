@@ -14,7 +14,7 @@ Conversation,#user_msgs,#assistant_msgs,#linear_msgs_total,#restarts,#msgs_total
 12 - DATAPATH BRANCH UPDATE (return to conversation 08),1,1,2,0,2,25,20,45,888,726,1614
 13 - CU BUG FIXING (return to conversation 11),6,6,12,1,14,190,241,431,5413,8001,13414
 14 - MEMORY MAPPED COMPONENTS,7,7,14,0,14,79,516,595,3079,16237,19316
-15 - ALU UPDATE (return to conversation 03),1,1,2,0,2,2,32,34,98,1368,1466
 15 - SHIFT REGISTER BUG FIX,2,2,4,0,4,38,85,123,985,2593,3578
 16 - DATAPATH BUG FIXING AND SMALL CHANGES (return to conversation 12),6,6,12,0,12,116,128,244,2979,4613,7592
 17 - MEMORY MAPPED CONSTANTS (return to conversation 14),4,4,8,0,8,21,101,122,849,4655,5504
+18 - ALU OPTIMIZE (return to conversation 03),1,1,2,0,2,2,32,34,98,1368,1466

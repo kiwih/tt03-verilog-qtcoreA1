@@ -360,7 +360,7 @@ endmodule
 
 With this change, any opcode starting with `11` will be interpreted as a CLR operation, which should help improve efficiency.
 
-# 15 - ALU UPDATE (return to conversation 03)
+# 18 - ALU OPTIMIZE (return to conversation 03)
 
 ## USER
 To optimize this further, can you combine the default case and 4'b11 so the default case is CLR?
