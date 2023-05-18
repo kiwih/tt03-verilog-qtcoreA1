@@ -1,3 +1,5 @@
+# 00 - SPECIFICATION
+
 ## USER
 Let us make a brand new microprocessor design together. We're severely constrained on space and I/O. We have to fit in 1000 standard cells of an ASIC, so I think we will need to restrict ourselves to an accumulator based 8-bit architecture with no multi-byte instructions. Given this, how do you think we should begin?
 
@@ -25,7 +27,7 @@ Given your constraints, we can start by outlining the essential components and f
 
 Once you have a clear plan and requirements, you can begin implementing the microprocessor design in an HDL, keeping in mind the constraints on space and I/O.
 
-## USER
+## USER (#restarts:1)
 Okay. Let us begin by defining the ISA then. Given we need to fit within 1000 standard cells, so you're correct and we're definitely need to have a small set of instructions. Provide a list of instructions and the binary encoding for each. 
 
 ## ASSISTANT
@@ -50,7 +52,7 @@ In this design, each instruction is encoded in 8 bits: 3 bits for the opcode and
 
 This minimal ISA should provide sufficient functionality for basic arithmetic, logic, and control operations while keeping the microprocessor design simple and small.
 
-## USER
+## USER (#restarts:1)
 I like this ISA! I only see a couple of gaps. Can we have an instruction for inverting the accumulator, zeroing the accumulator, rotating it left and right, and one for saving the current address to the accumulator on branch? I think we could add them in the additional space for the instructions beginning "111".
 
 ## ASSISTANT
@@ -88,7 +90,7 @@ Now, the updated ISA includes the following instructions:
 
 This updated ISA now provides additional functionality, including accumulator inversion, zeroing, rotation, and saving the current address to the accumulator on a branch.
 
-## USER
+## USER (#restarts:2)
 Looks good! I think we have just a few more gaps considering constants and accumulator manipulation. Can we add a few more instructions to the "111" opcode space? Firstly, add instructions to increment or decrement the accumulator. Then, Firstly, an instruction to add a 4-bit immediate to the accumulator, and another to shift the accumulator left by 4 bits. This will enable us to set the accumulator value using 4 instructions. 
 Just provide the new instructions, don't print the whole table.
 
@@ -201,7 +203,7 @@ Sure, we can add a new instruction to stop the processor until reset. We'll call
 
 The HLT instruction, with opcode 111 and operand 11111, stops the processor until it's reset, providing a way to halt the processor when needed.
 
-## USER
+## USER (#restarts:1)
 Can you now split this table into two tables, one for instructions with variable-data operands and one for instructions with 8-bit constant opcodes?
 
 ## ASSISTANT
@@ -378,7 +380,7 @@ Sure, I can update the ISA to accommodate BEQ and BNE instructions with relative
 
 BEQ_FWD and BNE_FWD skip one instruction forward if the condition is met, while BEQ_BWD and BNE_BWD skip one instruction backward if the condition is met.
 
-## USER
+## USER (#restarts:2)
 This looks great. Can you now reprint all three of our ISA tables in order ("Instructions with Variable-Data Operands", "Control and Branching Instructions", "Data Manipulation Instructions") with all of their details to make the complete specification for the 8-bit accumulator-based processor?
 
 ## ASSISTANT
@@ -463,7 +465,7 @@ Here's the updated "Instructions with Variable-Data Operands" table, replacing t
 
 This addition of the LDAR instruction will enable pointer-like dereferences and enhance the capabilities of the processor.
 
-## USER
+## USER (#restarts:1)
 This won't work, as we can't have a variable-data operand instruction beginning with "111". Are there other superfluous instructions instead of ROR? I'm wondering if ADDI can already be used to implement INC?
 
 ## ASSISTANT
@@ -565,7 +567,7 @@ Here's the corrected "Data Manipulation Instructions" table:
 
 With this correction, the LDAR instruction now performs a single pointer dereference, where the accumulator is loaded with the value stored at the memory address pointed to by the accumulator.
 
-## USER
+## USER (#restarts:2)
 Can you now also re-print the Instructions with Variable-Data Operands (LDA/STA/ADD/SUB/AND/OR/XOR) table?
 
 ## ASSISTANT
@@ -584,3 +586,37 @@ Of course! Here's the updated "Instructions with Variable-Data Operands" table w
 | XOR         | XOR memory contents with Accumulator        | 110            | Memory Address  | ACC <- ACC ^ M[Address]   |
 
 This table now includes the register effects for each instruction, detailing how the accumulator (ACC) is affected by the different operations.
+
+# 10 - SPEC BRANCH UPDATE (return to conversation 00)
+
+## USER (#restarts:1)
+Can you re-type the Control and Branching Instructions table but make it so the branch forward instructions jump an extra instruction? As it turns out, skipping just one instruction isn't enough!
+
+Here's the previous table for your reference:
+
+Control and Branching Instructions
+Instruction 	Description 	Opcode (8 bits) 	PC Behavior
+JMP 	Jump to memory address 	11110000 	PC <- ACC (Load the PC with the address stored in the accumulator)
+JSR 	Jump to Subroutine (save address to ACC) 	11110001 	ACC <- PC + 1, PC <- ACC (Save the next address in ACC, then jump to the address in ACC)
+BEQ_FWD 	Branch if equal, forward (branch if ACC == 0) 	11110010 	If ACC == 0, then PC <- PC + 2 (Jump 1 instruction forward if ACC is zero)
+BEQ_BWD 	Branch if equal, backward (branch if ACC == 0) 	11110011 	If ACC == 0, then PC <- PC - 2 (Jump 1 instruction backward if ACC is zero)
+BNE_FWD 	Branch if not equal, forward (branch if ACC != 0) 	11110100 	If ACC != 0, then PC <- PC + 2 (Jump 1 instruction forward if ACC is non-zero)
+BNE_BWD 	Branch if not equal, backward (branch if ACC != 0) 	11110101 	If ACC != 0, then PC <- PC - 2 (Jump 1 instruction backward if ACC is non-zero)
+HLT 	Halt the processor until reset 	11111111 	Stop execution (PC does not change until a reset occurs)
+
+## ASSISTANT
+Here's the updated "Control and Branching Instructions" table with the branch forward instructions jumping an extra instruction:
+
+**Control and Branching Instructions**
+
+| Instruction | Description                               | Opcode (8 bits) | PC Behavior                                  |
+|-------------|-------------------------------------------|----------------|---------------------------------------------|
+| JMP         | Jump to memory address                    | 11110000       | PC <- ACC (Load the PC with the address stored in the accumulator) |
+| JSR         | Jump to Subroutine (save address to ACC)  | 11110001       | ACC <- PC + 1, PC <- ACC (Save the next address in ACC, then jump to the address in ACC) |
+| BEQ_FWD     | Branch if equal, forward (branch if ACC == 0) | 11110010   | If ACC == 0, then PC <- PC + 3 (Jump 2 instructions forward if ACC is zero) |
+| BEQ_BWD     | Branch if equal, backward (branch if ACC == 0) | 11110011   | If ACC == 0, then PC <- PC - 2 (Jump 1 instruction backward if ACC is zero) |
+| BNE_FWD     | Branch if not equal, forward (branch if ACC != 0) | 11110100   | If ACC != 0, then PC <- PC + 3 (Jump 2 instructions forward if ACC is non-zero) |
+| BNE_BWD     | Branch if not equal, backward (branch if ACC != 0) | 11110101   | If ACC != 0, then PC <- PC - 2 (Jump 1 instruction backward if ACC is non-zero) |
+| HLT         | Halt the processor until reset            | 11111111       | Stop execution (PC does not change until a reset occurs) |
+
+With this change, the BEQ_FWD and BNE_FWD instructions now jump two instructions forward, giving more flexibility for branching.

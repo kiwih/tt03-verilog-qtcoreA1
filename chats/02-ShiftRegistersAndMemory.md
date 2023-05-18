@@ -1,4 +1,6 @@
-## USER
+# 02 - SHIFT REGISTERS AND MEMORY
+
+## USER (#restarts:1)
 We are working on a an 8-bit accumulator-based RISC processor. 
 
 Here is the ISA that we have defined:
@@ -104,7 +106,7 @@ This shift register module has the following ports:
 
 You can instantiate this shift register module for each of your registers (PC, ACC, and IR) and connect them in a scan chain for debugging purposes.
 
-## USER
+## USER (#restarts:4)
 I'm receiving an error that says that concurrent assignment to a non-net 'data_out' is not permitted on the line `assign scan_out = internal_data[WIDTH-1];`
 
 ## ASSISTANT

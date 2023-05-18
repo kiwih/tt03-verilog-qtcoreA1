@@ -28,9 +28,9 @@ always @(*) begin
         4'b1001: Y = {A[0], A[7:1]};      // ROR
         4'b1010: Y = A - 1;               // DEC
         4'b1011: Y = ~A;                  // INV
-        //4'b1100: Y = 8'b00000000;         // CLR
-        default: Y = 8'b00000000;         // Default case: CLR (undefined operation)
+        default: Y = 8'b00000000;         // CLR, including 4'b1100, 4'b1101, 4'b1110, 4'b1111
     endcase
 end
 
 endmodule
+

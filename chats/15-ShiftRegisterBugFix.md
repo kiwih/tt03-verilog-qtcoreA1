@@ -1,3 +1,5 @@
+# 15 - SHIFT REGISTER BUG FIX
+
 ## USER
 I have the following shift_register written in Verilog:
 ```

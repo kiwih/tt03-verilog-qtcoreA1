@@ -1,4 +1,6 @@
-## USER
+# 07 - CONTROL UNIT OUTPUT LOGIC
+
+## USER (#restarts:1)
 This is a subset of the specification for "qtcore-A1", an 8-bit accumulator-based RISC processor.
 
 ## The ISA
@@ -480,7 +482,7 @@ endmodule
 
 Now the `ALU_opcode` is set as a wire, while the other relevant control signal outputs remain as "reg".
 
-## USER
+## USER (#restarts:2)
 Looks perfect. Can you now explain and write combinational verilog code to drive the ACC
 control signals? There are more classes of instruction that effect ACC.
 
@@ -540,7 +542,7 @@ end
 
 This code sets the default values for `ACC_write_enable` and `ACC_mux_select` and then updates them based on the current instruction during the EXECUTE state. The ALU output is the default source for the accumulator (ADD, SUB, AND, OR, XOR, SHL, SHR, SHL4, ROL, ROR, DEC, CLR, INV). For LDA and LDAR, the ACC mux select is changed to select memory contents as the source. STA has no effect on the ACC, and control and branching instructions do not have a direct effect on the ACC.
 
-## USER
+## USER (#restarts:1)
 The default values for ACC is to have write disabled, but many of these instructions do need to write to ACC? They should enable ACC write in those cases.
 
 ## ASSISTANT
@@ -599,7 +601,7 @@ end
 
 Now, the ACC write is enabled for the relevant instructions, including ADD, SUB, AND, OR, XOR, SHL, SHR, SHL4, ROL, ROR, DEC, CLR, and INV.
 
-## USER
+## USER (#restarts:1)
 Looks good - I can see one oversight however, which is there is one control and branching instruction which does write to ACC
 
 ## ASSISTANT
@@ -712,7 +714,7 @@ output wire scan_out // Scan chain output
 
 Now the control_unit module definition has been updated with "reg" for the PC, ACC, IR, and Memory control signal outputs.
 
-## USER
+## USER (#restarts:1)
 Looks perfect. Can you now explain and write combinational verilog code to drive the IR control signal?
 
 ## ASSISTANT
@@ -803,3 +805,654 @@ We use a case statement to check for the STA instruction (opcode 3'b001). If the
 Next, we check for the LDAR instruction (opcode 4'b1011) under Data Manipulation Instructions. If the instruction is LDAR, we set Memory_address_mux_select to 01, which selects ACC as the memory address.
 
 Finally, during the FETCH cycle (state_out == STATE_FETCH), we set Memory_address_mux_select to 10, which selects PC as the memory address for instruction fetching.
+
+# 11 - CU BRANCH UPDATE (return to conversation 07)
+
+## USER (#restarts:1)
+I've updated the forward branch instructions to jump an extra instruction - this means that we'll need an extra type of PC update, since the existing PC+1 used for BEQ_FWD and BNE_FWD won't work (we'll need a PC+2). Can you update the control signal multiplexer comments to suit in the top-level I/O? Fortunately, we don't need to increase the width of the signal as there was an unused encoding in our multiplexer control signals.
+
+Here's the existing I/O for reference:
+```
+module control_unit (
+input wire clk, // Clock input
+input wire rst, // Reset input
+input wire processor_enable, // Processor enable signal
+output reg processor_halted, // Processor halted signal
+input wire [7:0] instruction, // Input from the Instruction Register (IR)
+input wire ZF, // Zero Flag input, true when ACC is zero
+
+output reg PC_write_enable, // Enables writing to the PC
+output reg [1:0] PC_mux_select, // Selects the input for the PC multiplexer
+// 00: PC + 1 (FETCH cycle, BEQ_FWD, BNE_FWD)
+// 01: ACC (JMP, JSR)
+// 10: PC - 3 (BEQ_BWD, BNE_BWD)
+
+output reg ACC_write_enable, // Enables writing to the ACC
+output reg [1:0] ACC_mux_select, // Selects the input for the ACC multiplexer
+// 00: ALU output
+// 01: Memory contents (LDA, LDAR)
+// 10: PC (JSR)
+
+output reg IR_load_enable, // Enables loading new instruction into IR from memory
+
+output wire [3:0] ALU_opcode, // Control signal specifying the ALU operation
+output reg ALU_inputB_mux_select, // Selects input B for the ALU multiplexer
+// 0: Memory contents (ADD, SUB, AND, OR, XOR)
+// 1: Immediate (ADDI)
+
+output reg Memory_write_enable, // Enables writing to memory (STA)
+output reg [1:0] Memory_address_mux_select, // Selects input for memory address multiplexer
+// 00: IR[4:0] (LDA, STA, ADD, SUB, AND, OR, XOR)
+// 01: ACC (LDAR)
+// 10: PC (Instruction fetching)
+
+// Scan chain signals
+input wire scan_enable, // Scan chain enable signal
+input wire scan_in, // Scan chain input
+output wire scan_out // Scan chain output
+);
+```
+
+## ASSISTANT
+I understand that you've updated the forward branch instructions to jump an extra instruction. We can update the control signal multiplexer comments to reflect this change, and luckily, we don't need to increase the width of the PC_mux_select signal. Here's the updated I/O for the control_unit module:
+
+```
+module control_unit (
+input wire clk, // Clock input
+input wire rst, // Reset input
+input wire processor_enable, // Processor enable signal
+output reg processor_halted, // Processor halted signal
+input wire [7:0] instruction, // Input from the Instruction Register (IR)
+input wire ZF, // Zero Flag input, true when ACC is zero
+
+output reg PC_write_enable, // Enables writing to the PC
+output reg [1:0] PC_mux_select, // Selects the input for the PC multiplexer
+// 00: PC + 1 (FETCH cycle)
+// 01: ACC (JMP, JSR)
+// 10: PC - 3 (BEQ_BWD, BNE_BWD)
+// 11: PC + 2 (BEQ_FWD, BNE_FWD)
+
+output reg ACC_write_enable, // Enables writing to the ACC
+output reg [1:0] ACC_mux_select, // Selects the input for the ACC multiplexer
+// 00: ALU output
+// 01: Memory contents (LDA, LDAR)
+// 10: PC (JSR)
+
+output reg IR_load_enable, // Enables loading new instruction into IR from memory
+
+output wire [3:0] ALU_opcode, // Control signal specifying the ALU operation
+output reg ALU_inputB_mux_select, // Selects input B for the ALU multiplexer
+// 0: Memory contents (ADD, SUB, AND, OR, XOR)
+// 1: Immediate (ADDI)
+
+output reg Memory_write_enable, // Enables writing to memory (STA)
+output reg [1:0] Memory_address_mux_select, // Selects input for memory address multiplexer
+// 00: IR[4:0] (LDA, STA, ADD, SUB, AND, OR, XOR)
+// 01: ACC (LDAR)
+// 10: PC (Instruction fetching)
+
+// Scan chain signals
+input wire scan_enable, // Scan chain enable signal
+input wire scan_in, // Scan chain input
+output wire scan_out // Scan chain output
+);
+```
+
+I have added a new encoding (11) for the PC_mux_select signal that represents PC + 2 for the updated forward branch instructions (BEQ_FWD and BNE_FWD). The comments have been updated to reflect these changes.
+
+## USER (#restarts:1)
+Looks perfect. Can you now explain and write and updated version of the combinational verilog code to drive the PC control signals, taking into account the new multiplexer control signal options? Here's your existing code for reference:
+
+```
+always @(*) begin
+    // Default values
+    PC_write_enable = 1'b0;
+    PC_mux_select = 2'b00;
+
+    case (state_out)
+        STATE_FETCH: begin
+            PC_write_enable = 1'b1;
+            PC_mux_select = 2'b00;
+        end
+        STATE_EXECUTE: begin
+            case (instruction[7:0])
+                8'b11110000: begin // JMP
+                    PC_write_enable = 1'b1;
+                    PC_mux_select = 2'b01;
+                end
+                8'b11110001: begin // JSR
+                    PC_write_enable = 1'b1;
+                    PC_mux_select = 2'b01;
+                end
+                8'b11110010: begin // BEQ_FWD
+                    if (ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b00;
+                    end
+                end
+                8'b11110011: begin // BEQ_BWD
+                    if (ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b10;
+                    end
+                end
+                8'b11110100: begin // BNE_FWD
+                    if (!ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b00;
+                    end
+                end
+                8'b11110101: begin // BNE_BWD
+                    if (!ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b10;
+                    end
+                end
+            endcase
+        end
+    endcase
+end
+
+```
+
+## ASSISTANT
+I understand that you want to update the combinational Verilog code for driving the PC control signals to take into account the new multiplexer control signal options (PC + 2 for BEQ_FWD and BNE_FWD). Here's the updated code with the changes:
+
+```
+always @(*) begin
+    // Default values
+    PC_write_enable = 1'b0;
+    PC_mux_select = 2'b00;
+
+    case (state_out)
+        STATE_FETCH: begin
+            PC_write_enable = 1'b1;
+            PC_mux_select = 2'b00;
+        end
+        STATE_EXECUTE: begin
+            case (instruction[7:0])
+                8'b11110000: begin // JMP
+                    PC_write_enable = 1'b1;
+                    PC_mux_select = 2'b01;
+                end
+                8'b11110001: begin // JSR
+                    PC_write_enable = 1'b1;
+                    PC_mux_select = 2'b01;
+                end
+                8'b11110010: begin // BEQ_FWD
+                    if (ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b11;
+                    end
+                end
+                8'b11110011: begin // BEQ_BWD
+                    if (ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b10;
+                    end
+                end
+                8'b11110100: begin // BNE_FWD
+                    if (!ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b11;
+                    end
+                end
+                8'b11110101: begin // BNE_BWD
+                    if (!ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b10;
+                    end
+                end
+            endcase
+        end
+    endcase
+end
+```
+
+I've updated the PC_mux_select value for BEQ_FWD and BNE_FWD cases to be 2'b11, which corresponds to the new PC + 2 encoding in the PC_mux_select signal comments.
+
+# 13 - CU BUG FIXING (return to conversation 11)
+
+## USER (#restarts:1)
+I don't think the opcode for LDAR is being checked for correctly in this code (the correct opcode is 11111011)
+```
+always @(*) begin
+    // Default: Memory_write_enable is 0 (disabled)
+    Memory_write_enable = 1'b0;
+
+    // Default: Memory_address_mux_select is 00 (IR[4:0])
+    Memory_address_mux_select = 2'b00;
+
+    // Instructions with Variable-Data Operands
+    case (instruction[7:5])
+        3'b001: begin // STA
+            Memory_write_enable = 1'b1; // Enable writing to memory
+        end
+    endcase
+
+    // Data Manipulation Instructions
+    if (instruction[7] == 1'b1) begin
+        case (instruction[6:3])
+            4'b1011: begin // LDAR
+                Memory_address_mux_select = 2'b01; // Select ACC as memory address
+            end
+        endcase
+    end
+
+    // Instruction fetching
+    if (state_out == STATE_FETCH) begin
+        Memory_address_mux_select = 2'b10; // Select PC as memory address
+    end
+end
+```
+
+## ASSISTANT
+You're right. The code you provided is checking the opcode for LDAR incorrectly. The correct opcode for LDAR is 8'b11111011, but the code is checking only the [6:3] bits. We should check all 8 bits of the instruction. Here's the updated code:
+
+```
+always @(*) begin
+    // Default: Memory_write_enable is 0 (disabled)
+    Memory_write_enable = 1'b0;
+
+    // Default: Memory_address_mux_select is 00 (IR[4:0])
+    Memory_address_mux_select = 2'b00;
+
+    // Instructions with Variable-Data Operands
+    case (instruction[7:5])
+        3'b001: begin // STA
+            Memory_write_enable = 1'b1; // Enable writing to memory
+        end
+    endcase
+
+    // Data Manipulation Instructions
+    case (instruction[7:0])
+        8'b11111011: begin // LDAR
+            Memory_address_mux_select = 2'b01; // Select ACC as memory address
+        end
+    endcase
+
+    // Instruction fetching
+    if (state_out == STATE_FETCH) begin
+        Memory_address_mux_select = 2'b10; // Select PC as memory address
+    end
+end
+```
+
+Now, the code checks all 8 bits of the instruction using a case statement, which ensures that the opcode for LDAR is checked correctly.
+
+## USER
+There's another problem with this code - the write enable should only be high in the execute state?
+
+## ASSISTANT
+You're right, the memory write enable should only be set high in the execute state for the instructions that require it. I'll update the code to account for this:
+
+```verilog
+always @(*) begin
+    // Default: Memory_write_enable is 0 (disabled)
+    Memory_write_enable = 1'b0;
+
+    // Default: Memory_address_mux_select is 00 (IR[4:0])
+    Memory_address_mux_select = 2'b00;
+
+    if (state_out == STATE_EXECUTE) begin
+        // Instructions with Variable-Data Operands
+        case (instruction[7:5])
+            3'b001: begin // STA
+                Memory_write_enable = 1'b1; // Enable writing to memory
+            end
+        endcase
+
+        // Data Manipulation Instructions
+        case (instruction[7:0])
+            8'b11111011: begin // LDAR
+                Memory_address_mux_select = 2'b01; // Select ACC as memory address
+            end
+        endcase
+    end
+
+    // Instruction fetching
+    if (state_out == STATE_FETCH) begin
+        Memory_address_mux_select = 2'b10; // Select PC as memory address
+    end
+end
+```
+
+Now, the memory write enable is set high only during the execute state for the STA instruction, and the memory address selection is also updated only during the execute state for the LDAR instruction.
+
+## USER
+Can we update the PC control signals
+ code so that the outputs are only emitted if the processor_enable signal is true?
+```
+always @(*) begin
+    // Default values
+    PC_write_enable = 1'b0;
+    PC_mux_select = 2'b00;
+
+    case (state_out)
+        STATE_FETCH: begin
+            PC_write_enable = 1'b1;
+            PC_mux_select = 2'b00;
+        end
+        STATE_EXECUTE: begin
+            case (instruction[7:0])
+                8'b11110000: begin // JMP
+                    PC_write_enable = 1'b1;
+                    PC_mux_select = 2'b01;
+                end
+                8'b11110001: begin // JSR
+                    PC_write_enable = 1'b1;
+                    PC_mux_select = 2'b01;
+                end
+                8'b11110010: begin // BEQ_FWD
+                    if (ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b11;
+                    end
+                end
+                8'b11110011: begin // BEQ_BWD
+                    if (ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b10;
+                    end
+                end
+                8'b11110100: begin // BNE_FWD
+                    if (!ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b11;
+                    end
+                end
+                8'b11110101: begin // BNE_BWD
+                    if (!ZF) begin
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b10;
+                    end
+                end
+            endcase
+        end
+    endcase
+end
+```
+
+## ASSISTANT
+Sure, I can update the code so that the outputs are only emitted if the `processor_enable` signal is true. I will add an `if (processor_enable)` condition around the entire state machine:
+
+```verilog
+always @(*) begin
+    // Default values
+    PC_write_enable = 1'b0;
+    PC_mux_select = 2'b00;
+
+    if (processor_enable) begin
+        case (state_out)
+            STATE_FETCH: begin
+                PC_write_enable = 1'b1;
+                PC_mux_select = 2'b00;
+            end
+            STATE_EXECUTE: begin
+                case (instruction[7:0])
+                    8'b11110000: begin // JMP
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b01;
+                    end
+                    8'b11110001: begin // JSR
+                        PC_write_enable = 1'b1;
+                        PC_mux_select = 2'b01;
+                    end
+                    8'b11110010: begin // BEQ_FWD
+                        if (ZF) begin
+                            PC_write_enable = 1'b1;
+                            PC_mux_select = 2'b11;
+                        end
+                    end
+                    8'b11110011: begin // BEQ_BWD
+                        if (ZF) begin
+                            PC_write_enable = 1'b1;
+                            PC_mux_select = 2'b10;
+                        end
+                    end
+                    8'b11110100: begin // BNE_FWD
+                        if (!ZF) begin
+                            PC_write_enable = 1'b1;
+                            PC_mux_select = 2'b11;
+                        end
+                    end
+                    8'b11110101: begin // BNE_BWD
+                        if (!ZF) begin
+                            PC_write_enable = 1'b1;
+                            PC_mux_select = 2'b10;
+                        end
+                    end
+                endcase
+            end
+        endcase
+    end
+end
+```
+
+Now, the PC control signals will only be emitted when the `processor_enable` signal is true.
+
+## USER
+Can we similarly add the processor_enable check to the ACC control signals?
+
+```
+always @(*) begin
+  // Default values
+  ACC_write_enable = 1'b0;
+  ACC_mux_select = 2'b00;
+
+  // Check if the current state is EXECUTE
+  if (state_out == STATE_EXECUTE) begin
+    // Immediate Data Manipulation Instructions
+    if (instruction[7:4] == 4'b1110) begin // ADDI
+      ACC_write_enable = 1'b1;
+      ACC_mux_select = 2'b00; // ALU output
+    end
+
+    // Instructions with Variable-Data Operands
+    case (instruction[7:5])
+      3'b000: begin // LDA
+        ACC_write_enable = 1'b1;
+        ACC_mux_select = 2'b01; // Memory contents
+      end
+      3'b001: ; // STA (No effect on ACC)
+      3'b010,
+      3'b011,
+      3'b100,
+      3'b101,
+      3'b110: ACC_write_enable = 1'b1; // ADD, SUB, AND, OR, XOR
+    endcase
+
+    // Control and Branching Instructions
+    case (instruction)
+      8'b11110001: begin // JSR
+        ACC_write_enable = 1'b1;
+        ACC_mux_select = 2'b10; // PC
+      end
+    endcase
+
+    // Data Manipulation Instructions
+    case (instruction)
+      8'b11110110,
+      8'b11110111,
+      8'b11111000,
+      8'b11111001,
+      8'b11111010,
+      8'b11111100,
+      8'b11111101,
+      8'b11111110: ACC_write_enable = 1'b1; // SHL, SHR, SHL4, ROL, ROR, DEC, CLR, INV
+      8'b11111011: begin // LDAR
+        ACC_write_enable = 1'b1;
+        ACC_mux_select = 2'b01; // Memory contents
+      end
+    endcase
+
+  end // if (state_out == STATE_EXECUTE)
+end
+```
+
+## ASSISTANT
+Sure, I can add the `processor_enable` check to the ACC control signals. I will add an `if (processor_enable)` condition around the entire state machine:
+
+```verilog
+always @(*) begin
+  // Default values
+  ACC_write_enable = 1'b0;
+  ACC_mux_select = 2'b00;
+
+  if (processor_enable) begin
+    // Check if the current state is EXECUTE
+    if (state_out == STATE_EXECUTE) begin
+      // Immediate Data Manipulation Instructions
+      if (instruction[7:4] == 4'b1110) begin // ADDI
+        ACC_write_enable = 1'b1;
+        ACC_mux_select = 2'b00; // ALU output
+      end
+
+      // Instructions with Variable-Data Operands
+      case (instruction[7:5])
+        3'b000: begin // LDA
+          ACC_write_enable = 1'b1;
+          ACC_mux_select = 2'b01; // Memory contents
+        end
+        3'b001: ; // STA (No effect on ACC)
+        3'b010,
+        3'b011,
+        3'b100,
+        3'b101,
+        3'b110: ACC_write_enable = 1'b1; // ADD, SUB, AND, OR, XOR
+      endcase
+
+      // Control and Branching Instructions
+      case (instruction)
+        8'b11110001: begin // JSR
+          ACC_write_enable = 1'b1;
+          ACC_mux_select = 2'b10; // PC
+        end
+      endcase
+
+      // Data Manipulation Instructions
+      case (instruction)
+        8'b11110110,
+        8'b11110111,
+        8'b11111000,
+        8'b11111001,
+        8'b11111010,
+        8'b11111100,
+        8'b11111101,
+        8'b11111110: ACC_write_enable = 1'b1; // SHL, SHR, SHL4, ROL, ROR, DEC, CLR, INV
+        8'b11111011: begin // LDAR
+          ACC_write_enable = 1'b1;
+          ACC_mux_select = 2'b01; // Memory contents
+        end
+      endcase
+
+    end // if (state_out == STATE_EXECUTE)
+  end // if (processor_enable)
+end
+```
+
+Now, the ACC control signals will only be emitted when the `processor_enable` signal is true.
+
+## USER
+Can we similarly add the processor_enable check to the IR control signals?
+```
+always @(*) begin
+    // Default: IR_load_enable is 0 (disabled)
+    IR_load_enable = 1'b0;
+
+    // During FETCH cycle, set IR_load_enable to 1 (enabled)
+    if (state_out == STATE_FETCH) begin
+        IR_load_enable = 1'b1;
+    end
+end
+```
+
+## ASSISTANT
+Of course, I can add the `processor_enable` check to the IR control signals. I will wrap the entire state machine with an `if (processor_enable)` condition:
+
+```verilog
+always @(*) begin
+    // Default: IR_load_enable is 0 (disabled)
+    IR_load_enable = 1'b0;
+
+    if (processor_enable) begin
+        // During FETCH cycle, set IR_load_enable to 1 (enabled)
+        if (state_out == STATE_FETCH) begin
+            IR_load_enable = 1'b1;
+        end
+    end
+end
+```
+
+Now, the IR control signals will only be emitted when the `processor_enable` signal is true.
+
+## USER
+Can we also add the processor_enable check for the memory signals?
+```
+always @(*) begin
+    // Default: Memory_write_enable is 0 (disabled)
+    Memory_write_enable = 1'b0;
+
+    // Default: Memory_address_mux_select is 00 (IR[4:0])
+    Memory_address_mux_select = 2'b00;
+
+    if (state_out == STATE_EXECUTE) begin
+        // Instructions with Variable-Data Operands
+        case (instruction[7:5])
+            3'b001: begin // STA
+                Memory_write_enable = 1'b1; // Enable writing to memory
+            end
+        endcase
+
+        // Data Manipulation Instructions
+        case (instruction[7:0])
+            8'b11111011: begin // LDAR
+                Memory_address_mux_select = 2'b01; // Select ACC as memory address
+            end
+        endcase
+    end
+
+    // Instruction fetching
+    if (state_out == STATE_FETCH) begin
+        Memory_address_mux_select = 2'b10; // Select PC as memory address
+    end
+end
+```
+
+## ASSISTANT
+Sure, I can add the `processor_enable` check for the memory signals. I will wrap the entire state machine with an `if (processor_enable)` condition:
+
+```verilog
+always @(*) begin
+    // Default: Memory_write_enable is 0 (disabled)
+    Memory_write_enable = 1'b0;
+
+    // Default: Memory_address_mux_select is 00 (IR[4:0])
+    Memory_address_mux_select = 2'b00;
+
+    if (processor_enable) begin
+        if (state_out == STATE_EXECUTE) begin
+            // Instructions with Variable-Data Operands
+            case (instruction[7:5])
+                3'b001: begin // STA
+                    Memory_write_enable = 1'b1; // Enable writing to memory
+                end
+            endcase
+
+            // Data Manipulation Instructions
+            case (instruction[7:0])
+                8'b11111011: begin // LDAR
+                    Memory_address_mux_select = 2'b01; // Select ACC as memory address
+                end
+            endcase
+        end
+
+        // Instruction fetching
+        if (state_out == STATE_FETCH) begin
+            Memory_address_mux_select = 2'b10; // Select PC as memory address
+        end
+    end
+end
+```
+
+Now, the memory control signals will only be emitted when the `processor_enable` signal is true.

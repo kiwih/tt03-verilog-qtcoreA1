@@ -1,3 +1,5 @@
+# 14 - MEMORY MAPPED COMPONENTS
+
 ## USER
 I have the following memory bank module written in Verilog:
 ```
@@ -464,7 +466,7 @@ module memory_bank #(
             data_out = {led_data_out, btn_data_out}; // Place btn_data_out at the LSB
         end
     end
-
+```
    
 
 ## USER
@@ -606,6 +608,8 @@ endmodule
 ```
 
 This updated module now includes
+
+# 17 - MEMORY MAPPED CONSTANTS (return to conversation 14)
 
 ## USER
 I want to add a few more constant memory-mapped values in the //Read operation outputs.

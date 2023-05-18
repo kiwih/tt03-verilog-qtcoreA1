@@ -1,4 +1,6 @@
-## USER
+# 09 - PYTHON ASSEMBLER
+
+## USER (#restarts:2)
 Here is the ISA for "qtcore-A1", an 8-bit accumulator-based RISC processor.
 
 ## The ISA
@@ -193,7 +195,7 @@ for addr, value in binary_program:
 
 This script defines an `assemble` function that takes a list of assembly lines as input and returns the assembled binary program as a list of tuples containing the address and binary value. The example usage demonstrates how to use the `assemble` function and print the assembled binary program in the required format. Note that this script assumes that the provided assembly program is well-formed and error-free.
 
-## USER
+## USER (#restarts:1)
 One issue - the ADDI instruction has a 4-bit operand, not a 5-bit one.
 
 ## ASSISTANT
@@ -271,7 +273,7 @@ for addr, value in binary_program:
 
 Now, the script correctly handles the 4-bit operand for the ADDI instruction.
 
-## USER
+## USER (#restarts:1)
 Great. Can you add one meta-instruction, NOP, which can be represented by ADDI with all zeros as the operand?
 
 ## ASSISTANT

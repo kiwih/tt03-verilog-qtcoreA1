@@ -1,4 +1,6 @@
-## USER
+# 05 - CONTROL UNIT STATE LOGIC
+
+## USER (#restarts:5)
 This is the full specification for "qtcore-A1", an 8-bit accumulator-based RISC processor, implemented by ChatGPT with prompting by Hammond Pearce.
 
 ## The ISA
@@ -406,7 +408,7 @@ end
 
 This block will work with Verilog, and it retains the same functionality as before.
 
-## USER
+## USER (#restarts:2)
 OK. Can you also include the processor_enable input? The processor should not advance state without this signal.
 
 ## ASSISTANT
@@ -460,7 +462,7 @@ end
 
 Now, the processor will only advance its state if the `processor_enable` signal is asserted.
 
-## USER
+## USER (#restarts:2)
 Cool. Can you write the complete control_unit Verilog code that we have so far? Don't include the top-level I/O from the specification.
 
 ## ASSISTANT
@@ -771,7 +773,7 @@ endmodule
 
 Now the code includes the `STATE_RESET` localparam and handles the reset case properly by moving the system to the `STATE_FETCH` state upon reset.
 
-## USER
+## USER (#restarts:1)
 Two quick fixes - can you add a processor_halted output which is emitted in the state logic? Also, can you make it so that we leave STATE_RESET when the reset input is low, not high? Just write the code following // Combinational logic for state_in, not the whole file.
 
 ## ASSISTANT
@@ -836,7 +838,7 @@ assign processor_halted = (state_out == STATE_HALT);
 
 Now the `processor_halted` output is added, and the system will leave the `STATE_RESET` state when the reset input is low.
 
-## USER
+## USER (#restarts:1)
 Can we make processor_halted a reg type and assign it combinationally in the always block with the rest of the state logic? That way it will also be suppressed by the enable signal.
 
 ## ASSISTANT

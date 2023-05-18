@@ -1,4 +1,6 @@
-## USER
+# 04 - CONTROL SIGNAL PLANNING
+
+## USER (#restarts:2)
 # qtcore-A1
 
 The full specification for "qtcore-A1", an 8-bit accumulator-based RISC processor, implemented by ChatGPT with prompting by Hammond Pearce.
@@ -228,7 +230,7 @@ Possible component sources and destinations are as follows:
    - Sources: IR (decoded instructions)
    - Destinations: PC (JMP, JSR, BEQ_FWD, BEQ_BWD, BNE_FWD, BNE_BWD), ACC (JSR), ALU (ALU operations)
 
-## USER
+## USER (#restarts:4)
 Great start. However, we will be implementing a processor with multi-cycle execution, which changes the PC update values. What are the possible PC updates in the specification's "Multi-cycle execution"? 
 
 ## ASSISTANT
@@ -358,7 +360,7 @@ You are correct. The memory address input multiplexer should also include an inp
 
 This updated multiplexer will allow you to fetch instructions from memory using the PC value as the address input.
 
-## USER
+## USER (#restarts:2)
 Looks excellent. Assuming the multiplexers are provided as you described, can you now provide a list of control signals that are needed for each register and the memory unit? Include the multiplexer control signals you described above to associate them with each register.
 
 ## ASSISTANT
@@ -434,7 +436,7 @@ You're correct. Both the PC and ACC registers should have write enable signals t
 
 The write enable signals for PC and ACC ensure that their values are only updated when required by the current instruction and execution cycle.
 
-## USER
+## USER (#restarts:2)
 One optimization - It looks like the PC has two options that are both PC + 1 - can we simplify?
 
 ## ASSISTANT
@@ -472,7 +474,7 @@ Yes, you're right. We can simplify the control signals for the PC input multiple
 
 By simplifying the PC_mux_select, we have reduced the complexity of the control logic while still achieving the desired behavior for the PC updates.
 
-## USER
+## USER (#restarts:10)
 This looks excellent. According to this list, please produce the module definition for a control unit in Verilog which could operate the processor datapath. Please comment the purpose of each I/O. If a signal is for controlling a multiplexer, please also comment what each possible value should correspond to in the datapath.
 
 ## ASSISTANT
@@ -515,7 +517,7 @@ endmodule
 
 This module definition includes all the control signals required to manage the processor's datapath components, including the multiplexer control signals and the signals to enable writing to the registers and memory. The actual control logic implementation is not provided here but would be designed based on the instruction set and desired processor behavior.
 
-## USER
+## USER (#restarts:1)
 Might the control unit need more inputs for the branching inputs? How should it decide to enable the branch mux?
 
 ## ASSISTANT

@@ -1,3 +1,5 @@
+# 01 - REGISTER SPECIFICATION
+
 ## USER
 Here is the full ISA specification for the 8-bit accumulator-based RISC processor.
 
@@ -80,7 +82,7 @@ Here are some possible optimizations:
 
 Removing registers and implementing their functionality combinatorially will likely increase the complexity of your design, and it may affect performance due to increased propagation delays. It's essential to carefully consider the trade-offs before making any changes to the register set. Additionally, if your primary concern is minimizing space, it's worth noting that the size of the processor's register set is relatively small compared to the 32-byte register memory.
 
-## USER
+## USER (#restarts:1)
 Lets remove the MAR and MDR, but keep the IR so we don't need concurrent read and write. Let's also reduce the PC to the minimum size you suggested. What in the ISA would require a status register?
 
 ## ASSISTANT
@@ -115,7 +117,7 @@ Sure, considering the space constraints and the decision not to expand the ISA, 
 
 These three registers are essential for implementing the given ISA while keeping the space requirements to a minimum. Since the MAR, MDR, and Status Register are not included, the design will need additional combinatorial logic to handle memory access and data flow directly between memory and the processor. However, this trade-off results in a smaller register set that meets the space-constrained requirements.
 
-## USER
+## USER (#restarts:1)
 Using these three registers as a start point, can you define the other components that we need to implement this processor?
 
 ## ASSISTANT

@@ -1,4 +1,6 @@
-## USER
+# 03 - MULTI-CYCLE PLANNING AND ALU
+
+## USER (#restarts:1)
 The full ISA specification for the 8-bit accumulator-based RISC processor.
 
 **Immediate Data Manipulation Instructions**
@@ -276,7 +278,7 @@ endmodule
 
 With this comprehensive ALU, you can perform all the required operations for the accumulator using the appropriate opcode. The ALU can now handle ADD, SUB, AND, OR, XOR, SHL, SHR, SHL4, ROL, ROR, DEC, CLR, and INV operations.
 
-## USER
+## USER (#restarts:1)
 This ALU is good. Can you print the ALU opcodes as a table?
 
 ## ASSISTANT
@@ -357,3 +359,42 @@ endmodule
 ```
 
 With this change, any opcode starting with `11` will be interpreted as a CLR operation, which should help improve efficiency.
+
+# 15 - ALU UPDATE (return to conversation 03)
+
+## USER
+To optimize this further, can you combine the default case and 4'b11 so the default case is CLR?
+
+## ASSISTANT
+Absolutely, by making the default case for the ALU the CLR operation, we can save some complexity in the implementation. This way, any opcode not specifically defined will be treated as a CLR operation. Here's the updated Verilog module:
+
+```verilog
+module alu (
+    input wire [7:0] A,
+    input wire [7:0] B,
+    input wire [3:0] opcode,
+    output reg [7:0] Y
+);
+
+always @(*) begin
+    case (opcode)
+        4'b0000: Y = A + B;               // ADD
+        4'b0001: Y = A - B;               // SUB
+        4'b0010: Y = A & B;               // AND
+        4'b0011: Y = A | B;               // OR
+        4'b0100: Y = A ^ B;               // XOR
+        4'b0101: Y = A << 1;              // SHL
+        4'b0110: Y = A >> 1;              // SHR
+        4'b0111: Y = A << 4;              // SHL4
+        4'b1000: Y = {A[6:0], A[7]};      // ROL
+        4'b1001: Y = {A[0], A[7:1]};      // ROR
+        4'b1010: Y = A - 1;               // DEC
+        4'b1011: Y = ~A;                  // INV
+        default: Y = 8'b00000000;         // CLR, including 4'b1100, 4'b1101, 4'b1110, 4'b1111
+    endcase
+end
+
+endmodule
+```
+
+Now, if the opcode does not match any defined operations, the ALU will default to the CLR operation, which sets Y to zero. This includes any opcode starting with `11` (4'b1100, 4'b1101, 4'b1110, 4'b1111), which were previously not explicitly defined.

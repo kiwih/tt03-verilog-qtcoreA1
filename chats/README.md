@@ -11,3 +11,15 @@ Secondly, while the development broadly flowed linearly from topic to topic, the
 Finally, the conversations do not specifically result in files. Instead, they produced Verilog modules or snippets of modules that I as an engineer copied and pasted in the logical order to build up the processor itself. This is very much a co-design process, so in addition to the feedback I gave the model, I also had to handle the extraction of the code and giving it to the tooling (Xilinx Vivado and IVerilog). Overall the model wrote 100% of all code aside from the top-level I/O, which I specified according to the needs of Tiny Tapeout.
 
 - Hammond Pearce, May 2023
+
+## Scanning the chats automatically for metadata
+
+1. Scan all markdown files in this directory that start with two digits and a dash, and end with `.md`
+2. Conversations have titles. Examples:
+ - `# 00 SPECIFICATION`
+ - `# 10 SPEC BRANCH UPDATE (return to conversation)` 
+ so, we can match them with the following regex:
+ - `# [0-9]{2} - [A-Z\- ]+ (?:\([a-z ]+\))?`
+3. Inside each conversation, messages from the User begin with `## USER` and messages from the AI begin with `## ASSISTANT`. There is also an optional tag after the `## USER` tag, `(restarts:[0-9]+)` which indicates how many times the conversation was restarted at that point. To calculate the number of messages, add up all `## USER` and `## ASSISTANT` tags, and then add the number of restarts twice (once for the user, once for the assistant - prior assistant messages are not included but were generated).
+
+A python script is included to calculate the metadata information and present it in a table.
