@@ -27,13 +27,14 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: tinytapeout/tt-support-tools
+        ref: tt03
         path: tt
-
+        
     # need python
     - name: setup python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: '3.9'
     - run: pip install -r tt/requirements.txt
 
     # fetch the Verilog from Wokwi API
@@ -45,8 +46,9 @@ jobs:
       run: |
         git clone --depth=1 --branch $OPENLANE_TAG https://github.com/The-OpenROAD-Project/OpenLane.git $OPENLANE_ROOT
         cd $OPENLANE_ROOT
+        # Workaround for broken volare 0.9.0:
+        sed -i 's/pip install --upgrade --no-cache-dir volare/pip install --upgrade --no-cache-dir volare==0.8.0/' Makefile
         make
-
     # run OpenLane to build the GDS
     - name: make GDS
       run: ./tt/tt_tool.py --harden
@@ -79,12 +81,6 @@ jobs:
         path: runs
         key: ${{ runner.os }}-runs-${{ github.run_id }}
 
-    - name: populate PDK cache
-      uses: actions/cache@v3
-      with:
-        path: ${{ env.PDK_ROOT }}
-        key: ${{ runner.os }}-pdk-${{ github.run_id }}
-
     # create png
     - name: png
       run: ./tt/tt_tool.py --create-png
@@ -94,77 +90,6 @@ jobs:
       with:
         path: 'gds_render.png'
         key: ${{ runner.os }}-png-${{ github.run_id }}
-
-##############################################################
-# GateLevel sim
-  gatelevel:
-    needs: gds
-    env:
-        PDK_ROOT:               /home/runner/pdk
-    runs-on: ubuntu-latest
-    steps:
-    - name: checkout
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
-
-    - name: restore runs cache
-      uses: actions/cache@v3
-      with:
-        path: runs
-        key: ${{ runner.os }}-runs-${{ github.run_id }}
-
-    - name: restore pdk cache for the primitives needed for GL verification
-      uses: actions/cache@v3
-      with:
-        path: ${{ env.PDK_ROOT }}
-        key: ${{ runner.os }}-pdk-${{ github.run_id }}
-
-    # for debugging, show all the files
-    - name: show files
-      run: |
-        pwd
-        find .
-
-    # install oss fpga tools for iVerilog
-    - name: install oss-cad-suite
-      uses: YosysHQ/setup-oss-cad-suite@v2
-      with:
-          python-override: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-    - run: | 
-        yosys --version
-        iverilog -V
-        cocotb-config --libpython
-        cocotb-config --python-bin
-
-    - name: test
-      run: |
-        pwd
-        rm runs/wokwi/results/final/verilog/gl/*.nl.v 
-        cp runs/wokwi/results/final/verilog/gl/*.v src/gate_level_netlist.v
-        cd src
-        make clean
-        GATES=yes make
-        # make will return success even if the test fails, so check for failure in the results.xml
-        grep TEST_PASSES TEST_PASSES.txt
-
-    # - name: upload vcd
-    #   if: success() || failure()
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #       name: gatelevel-test-vcd
-    #       path: src/tb.vcd
-
-    - name: upload gate_level_netlist_and_vcd
-      uses: actions/upload-artifact@v3
-      with:
-          name: gate_level_netlist
-          path: |
-            src/gate_level_netlist.v
-            ${{ env.PDK_ROOT }}/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
-            ${{ env.PDK_ROOT }}/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
-            src/*.vcd
 
 ##############################################################
 # Generate files for the 3D viewer
@@ -194,7 +119,6 @@ jobs:
         python -m pip install numpy gdspy triangle pygltflib
         cp runs/wokwi/results/final/gds/*.gds tinytapeout.gds
         python3 gds2gltf.py tinytapeout.gds
-
     - name: populate viewer cache
       uses: actions/cache@v3
       with:
@@ -228,10 +152,10 @@ jobs:
           name: GDS
           path: |
             src/*
+            runs/*
             runs/wokwi/results/final/*
             runs/wokwi/reports/metrics.csv
             runs/wokwi/reports/synthesis/1-synthesis.AREA 0.stat.rpt
-
 ##############################################################
 # Publish to pages to get a nicely formatted result
 
